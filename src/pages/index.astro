@@ -1,16 +1,126 @@
+
 ---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Hero from '../components/Hero.astro';
+import Services from '../components/Services.astro';
+import Footer from '../components/Footer.astro';
+import Professionals from '../components/Professionals.astro';
+import Gallery from '../components/Gallery.astro';
+import { site } from '../config/site';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout
+  title="Urban Studio | Barbería en Yerba Buena"
+  description="Conocé los servicios de Urban Studio con Julián Villagra en Yerba Buena y reservá tu próximo turno online."
+>
+  <Navbar />
+
+  <main>
+    <Hero />
+    <Services />
+
+    <section id="nosotros" class="bg-neutral-950 px-6 py-20 text-center">
+      <p class="text-xs font-semibold uppercase tracking-[0.3em] text-amber-400">
+        Nuestra filosofía
+      </p>
+
+      <h2 class="mx-auto mt-4 max-w-2xl text-3xl font-bold sm:text-4xl">
+        La diferencia está en los detalles.
+      </h2>
+
+      <p class="mx-auto mt-5 max-w-xl leading-7 text-neutral-400">
+        En {site.name}, Julián Villagra combina técnica y atención
+        personalizada para ayudarte a encontrar tu estilo.
+      </p>
+    </section>
+
+    <Professionals />
+    <Gallery />
+
+   
+<section id="reservas" class="bg-neutral-950 px-6 py-20 sm:px-10">
+  <div class="mx-auto max-w-7xl">
+    <div class="mb-10 text-center">
+      <p class="text-xs font-semibold uppercase tracking-[0.3em] text-amber-400">
+        Visitá Urban Studio
+      </p>
+
+      <h2 class="mt-4 text-3xl font-bold sm:text-4xl">
+        Tu próximo corte empieza acá.
+      </h2>
+
+      <p class="mx-auto mt-4 max-w-xl leading-7 text-neutral-400">
+        Reservá tu turno y vení a conocernos.
+      </p>
+    </div>
+
+    <div class="grid gap-8 md:grid-cols-2 md:items-stretch">
+      <!-- Información del local -->
+      <div class="flex flex-col justify-center rounded-2xl border border-white/10 bg-neutral-900 p-7 sm:p-10">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-amber-400">
+          Encontranos
+        </p>
+
+        <h3 class="mt-4 text-2xl font-bold">
+          {site.name}
+        </h3>
+
+        <p class="mt-4 leading-7 text-neutral-400">
+          {site.address}
+        </p>
+
+        <div class="mt-6 border-t border-white/10 pt-6">
+          <p class="text-sm text-neutral-500">Días de atención</p>
+          <p class="mt-2 font-medium">{site.schedule}</p>
+        </div>
+
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a
+            href={site.bookingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="rounded-md bg-amber-400 px-5 py-3 font-semibold text-neutral-950 transition hover:bg-amber-300"
+          >
+            Reservar turno
+          </a>
+
+          <a
+            href={site.mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="rounded-md border border-neutral-700 px-5 py-3 font-semibold transition hover:border-amber-400 hover:text-amber-400"
+          >
+            Cómo llegar ↗
+          </a>
+        </div>
+
+        <a
+          href={site.instagram}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="mt-6 w-fit text-sm text-neutral-400 transition hover:text-amber-400"
+        >
+          Instagram de Urban Studio ↗
+        </a>
+      </div>
+
+      <!-- Mapa de Google Maps -->
+      <div class="min-h-[350px] overflow-hidden rounded-2xl border border-white/10 md:min-h-[420px]">
+        <iframe
+          src={`https://maps.google.com/maps?q=${encodeURIComponent(site.address)}&output=embed`}
+          title="Ubicación de Urban Studio en Yerba Buena"
+          class="h-full min-h-[350px] w-full md:min-h-[420px]"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+  </main>
+
+  <Footer />
+</Layout>

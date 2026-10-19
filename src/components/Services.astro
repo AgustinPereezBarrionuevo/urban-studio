@@ -1,0 +1,67 @@
+
+
+---
+const services = [
+  {
+    number: '01',
+    name: 'Corte de cabello',
+    description:
+      'Un corte adaptado a tu estilo, con perfilado de cejas incluido.',
+  },
+  {
+    number: '02',
+    name: 'Corte + perfilado de barba',
+    description:
+      'Combiná tu corte con el perfilado de barba para un look prolijo y equilibrado.',
+  },
+  {
+    number: '03',
+    name: 'Perfilado de barba',
+    description:
+      'Definición de contornos y forma para mantener una barba cuidada.',
+  },
+];
+---
+
+
+<section id="servicios" class="bg-neutral-900 px-6 py-24 sm:px-10">
+  <div class="mx-auto max-w-7xl">
+    <p class="text-xs font-semibold uppercase tracking-[0.3em] text-amber-400">
+      Lo que hacemos
+    </p>
+
+    <div class="mt-4 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+      <h2 class="max-w-xl text-4xl font-bold sm:text-5xl">
+        Servicios pensados para vos.
+      </h2>
+      <p class="max-w-md leading-7 text-neutral-400">
+        Técnica, dedicación y atención personalizada en cada visita.
+      </p>
+    </div>
+
+    <div class="mt-12 grid gap-5 md:grid-cols-3">
+      {services.map((service) => (
+        <article class="group rounded-xl border border-white/10 bg-neutral-950 p-7 transition hover:border-amber-400/50">
+          <p class="text-sm font-semibold text-amber-400">{service.number}</p>
+
+          <h3 class="mt-8 text-2xl font-semibold">{service.name}</h3>
+
+          <p class="mt-4 min-h-14 leading-6 text-neutral-400">
+            {service.description}
+          </p>
+
+          <a
+            href="https://link.agendapro.com/ar/urbanstudio/cdf11a3d"
+            class="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-white transition group-hover:text-amber-400"
+          >
+            Consultar servicio <span aria-hidden="true">↗</span>
+          </a>
+        </article>
+      ))}
+    </div>
+
+    <p class="mt-6 text-sm text-neutral-500">
+      Servicios ilustrativos. Los precios y la oferta definitiva se definirán con el negocio.
+    </p>
+  </div>
+</section>

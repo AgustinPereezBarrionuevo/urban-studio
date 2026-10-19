@@ -1,0 +1,67 @@
+
+---
+const haircuts = [
+  {
+    title: 'Fade clásico',
+    category: 'Degradado',
+    image: '/images/galeria/corte-2.jpg',
+  },
+  {
+    title: 'Estilo moderno',
+    category: 'Corte moderno',
+    image: '/images/galeria/corte-4.jpg',
+  },
+  {
+    title: 'Corte con textura',
+    category: 'Estilo urbano',
+    image: '/images/galeria/corte-3.jpg',
+  },
+  {
+    title: 'Detalles precisos',
+    category: 'Trabajo de barbería',
+    image: '/images/galeria/corte-5.jpg',
+  },
+];
+---
+
+<section id="galeria" class="bg-neutral-900 px-6 py-24 sm:px-10">
+  <div class="mx-auto max-w-7xl">
+    <div class="flex flex-col justify-between gap-5 md:flex-row md:items-end">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.3em] text-amber-400">
+          Inspiración
+        </p>
+        <h2 class="mt-4 text-4xl font-bold sm:text-5xl">
+          Nuestro trabajo habla por nosotros.
+        </h2>
+      </div>
+      <p class="max-w-md leading-7 text-neutral-400">
+        Cada corte es diferente. Explorá algunos estilos y encontrá inspiración para tu próximo cambio.
+      </p>
+    </div>
+
+    <div class="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {haircuts.map((haircut) => (
+        <article class="group relative overflow-hidden rounded-xl bg-neutral-950">
+          <img
+            src={haircut.image}
+            alt={haircut.title}
+            loading="lazy"
+            class="h-80 w-full object-cover transition duration-500 group-hover:scale-105"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent"></div>
+          <div class="absolute inset-x-0 bottom-0 p-5">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">
+              {haircut.category}
+            </p>
+            <h3 class="mt-2 text-xl font-semibold text-white">{haircut.title}</h3>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <p class="mt-6 text-sm text-neutral-500">
+      Galería provisional. Las fotografías definitivas se cargarán con autorización del negocio.
+    </p>
+  </div>
+</section>

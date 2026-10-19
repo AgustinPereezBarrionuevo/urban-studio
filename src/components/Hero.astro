@@ -1,0 +1,92 @@
+
+---
+import { site } from '../config/site';
+---
+
+<section
+  id="inicio"
+  class="relative flex min-h-[760px] items-center overflow-hidden bg-neutral-950 px-6 pb-20 pt-36 sm:px-10"
+>
+  <!-- Iluminación decorativa -->
+  <div
+    class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_75%_40%,rgba(180,120,30,0.13),transparent_55%)]"
+  ></div>
+
+  <div class="relative mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-2">
+    <!-- Texto principal -->
+    <div>
+      <p class="mb-6 text-xs font-semibold uppercase tracking-[0.35em] text-amber-400 sm:text-sm">
+        Técnica · Precisión · Estilo
+      </p>
+
+      <h1 class="max-w-2xl text-5xl font-bold leading-[1.08] tracking-tight sm:text-7xl">
+        Más que un corte.
+        <span class="mt-2 block text-amber-400">Una identidad.</span>
+      </h1>
+
+      <p class="mt-7 max-w-lg leading-7 text-neutral-400 sm:text-lg">
+        En Urban Studio, cada detalle cuenta. Encontrá un estilo que
+        refleje tu personalidad con atención personalizada y precisión
+        en cada corte.
+      </p>
+
+      <!-- Botones -->
+      <div class="mt-9 flex flex-wrap gap-4">
+        <a
+          href={site.bookingUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded-md bg-amber-400 px-6 py-3.5 font-semibold text-neutral-950 transition hover:bg-amber-300"
+        >
+          Reservar mi turno
+        </a>
+
+        <a
+          href="#servicios"
+          class="rounded-md border border-neutral-700 px-6 py-3.5 font-semibold transition hover:border-amber-400 hover:text-amber-400"
+        >
+          Explorar servicios
+        </a>
+      </div>
+
+      <!-- Mensajes de marca -->
+      <div class="mt-12 flex flex-wrap gap-x-8 gap-y-4 border-t border-white/10 pt-6">
+        <div>
+          <p class="text-xl font-bold">Tu estilo</p>
+          <p class="mt-1 text-sm text-neutral-500">Tu identidad</p>
+        </div>
+
+        <div>
+          <p class="text-xl font-bold">Cada detalle</p>
+          <p class="mt-1 text-sm text-neutral-500">Marca la diferencia</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Imagen principal -->
+    <div class="relative">
+      <div class="absolute -inset-3 rounded-2xl border border-amber-400/20"></div>
+
+      <div class="relative overflow-hidden rounded-xl">
+        <img
+          src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1100&q=85"
+          alt="Interior de una barbería de estilo moderno"
+          fetchpriority="high"
+          class="h-[390px] w-full object-cover sm:h-[520px]"
+        />
+
+        <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-neutral-950/70 via-transparent to-transparent"></div>
+      </div>
+
+      <!-- Texto superpuesto -->
+      <div class="absolute bottom-5 left-5 rounded-lg border border-white/10 bg-neutral-950/90 px-5 py-4 backdrop-blur">
+        <p class="text-xs uppercase tracking-[0.2em] text-amber-400">
+          {site.name}
+        </p>
+        <p class="mt-1 text-lg font-semibold">
+          Tu próxima versión empieza acá
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

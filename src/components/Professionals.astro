@@ -1,0 +1,67 @@
+
+---
+import { site } from '../config/site';
+
+const professional = {
+  name: site.barber,
+  role: 'Barbero profesional',
+  description:
+    'Técnica, precisión y atención personalizada para encontrar el estilo que mejor va con vos.',
+  image: '/images/galeria/barbero.jpg',
+};
+---
+
+<section id="profesionales" class="bg-neutral-950 px-6 py-24 sm:px-10">
+  <div class="mx-auto max-w-5xl">
+    <div class="text-center">
+      <p class="text-xs font-semibold uppercase tracking-[0.3em] text-amber-400">
+        El profesional
+      </p>
+
+      <h2 class="mt-4 text-4xl font-bold sm:text-5xl">
+        Detrás de cada detalle.
+      </h2>
+
+      <p class="mx-auto mt-5 max-w-2xl leading-7 text-neutral-400">
+        Un espacio donde la técnica y el estilo se encuentran para ofrecerte
+        una experiencia personalizada.
+      </p>
+    </div>
+
+    <article class="mt-12 grid overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 md:grid-cols-2">
+      <div class="overflow-hidden">
+        <img
+          src={professional.image}
+          alt={`Retrato de ${professional.name}`}
+          loading="lazy"
+          class="h-[380px] w-full object-cover sm:h-[480px]"
+        />
+      </div>
+
+      <div class="flex flex-col justify-center p-8 sm:p-12">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">
+          {professional.role}
+        </p>
+
+        <h3 class="mt-4 text-3xl font-bold sm:text-4xl">
+          {professional.name}
+        </h3>
+
+        <div class="mt-6 h-px w-16 bg-amber-400"></div>
+
+        <p class="mt-6 leading-7 text-neutral-400">
+          {professional.description}
+        </p>
+
+           <a
+            href="https://link.agendapro.com/ar/urbanstudio/cdf11a3d"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mt-8 inline-flex w-fit self-start rounded-md bg-amber-400 px-6 py-3 font-semibold text-neutral-950 transition hover:bg-amber-300"
+            >
+            Reservar turno
+            </a>
+      </div>
+    </article>
+  </div>
+</section>
