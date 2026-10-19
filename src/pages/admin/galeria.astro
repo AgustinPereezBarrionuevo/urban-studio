@@ -172,6 +172,20 @@
   outline: 1px solid #fbbf24;
 }
 
+:global(.gallery-action-danger) {
+  margin-top: 8px;
+  border-color: #7f1d1d;
+  background: #1c0b0b;
+  color: #fca5a5;
+}
+
+:global(.gallery-action-danger:hover) {
+  border-color: #ef4444;
+  background: #450a0a;
+  color: #fecaca;
+}
+
+
   [hidden] {
     display: none !important;
   }
@@ -467,6 +481,8 @@
   }
     
 
+    
+
 
 </style>
 
@@ -654,6 +670,68 @@
             : 'Fotografía publicada correctamente.';
         });
 
+        const deleteButton = document.createElement('button');
+            deleteButton.type = 'button';
+            deleteButton.className = 'gallery-action gallery-action-danger';
+            deleteButton.textContent = 'Eliminar foto';
+
+            deleteButton.addEventListener('click', async () => {
+            const confirmed = window.confirm(
+                `¿Eliminar "${image.title || 'esta fotografía'}"? ` +
+                'Se eliminará el archivo de Cloudinary y su registro de Supabase. ' +
+                'Esta acción no se puede deshacer.'
+            );
+
+            if (!confirmed) return;
+
+            deleteButton.disabled = true;
+            deleteButton.textContent = 'Eliminando...';
+            galleryMessage.textContent = 'Eliminando fotografía...';
+
+            try {
+                const { data, error } = await supabase.functions.invoke(
+                'cloudinary-delete',
+                {
+                    body: { imageId: image.id },
+                }
+                );
+
+                if (error) {
+                let detail = error.message;
+
+                try {
+                    const response = await error.context?.json();
+                    if (response?.error) detail = response.error;
+                } catch {
+                    // Conservamos el mensaje original si no hay JSON.
+                }
+
+                throw new Error(detail);
+                }
+
+                if (!data?.success) {
+                throw new Error(data?.error || 'No se pudo eliminar la fotografía.');
+                }
+
+                await loadGallery();
+                galleryMessage.textContent = 'Fotografía eliminada correctamente.';
+            } catch (error) {
+                console.error('Error al eliminar la fotografía:', error);
+
+                const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : 'No se pudo eliminar la fotografía.';
+
+                // Actualizamos la lista por si la función llegó a ocultarla.
+                await loadGallery();
+                galleryMessage.textContent = errorMessage;
+            } finally {
+                deleteButton.disabled = false;
+                deleteButton.textContent = 'Eliminar foto';
+            }
+            });
+
          const saveButton = document.createElement('button');
         saveButton.type = 'button';
         saveButton.className = 'gallery-action gallery-action-primary';
@@ -703,6 +781,7 @@
         status,
         saveButton,
         actionButton,
+        deleteButton,
         );
 
         article.append(img, content);
