@@ -1,0 +1,723 @@
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Administrar galería | Urban Studio</title>
+  </head>
+
+  <body>
+    <main class="dashboard">
+      <header class="topbar">
+        <a href="/" class="brand">URBAN<span>.</span> STUDIO</a>
+        <div class="topbar-actions">
+          <a href="/admin/" class="panel-link">Panel</a>
+          <button id="logout-button" class="secondary-button" type="button">
+            Cerrar sesión
+          </button>
+        </div>
+      </header>
+
+      <section class="content">
+        <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
+        <h1>Galería de trabajos</h1>
+        <p class="description">
+          Subí nuevas fotografías y elegí cuáles querés mostrar en la web.
+        </p>
+
+        <p id="page-message" role="status" aria-live="polite">
+          Verificando sesión...
+        </p>
+
+        <form id="upload-form" class="upload-panel" hidden>
+          <h2>Publicar una fotografía</h2>
+          <p class="section-description">
+            Formatos permitidos: JPG, PNG y WebP. Tamaño máximo: 10 MB.
+          </p>
+
+          <div class="form-grid">
+            <div class="field field-full">
+              <label for="image-file">Fotografía</label>
+              <input
+                id="image-file"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label for="image-title">Título</label>
+              <input
+                id="image-title"
+                type="text"
+                maxlength="100"
+                placeholder="Ej. Fade clásico"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label for="image-category">Categoría</label>
+              <input
+                id="image-category"
+                type="text"
+                maxlength="60"
+                placeholder="Ej. Degradado"
+              />
+            </div>
+          </div>
+
+          <button id="upload-button" class="primary-button" type="submit">
+            Subir y publicar
+          </button>
+
+          <p id="upload-message" class="form-message" role="status" aria-live="polite"></p>
+        </form>
+
+        <section id="gallery-section" class="gallery-section" hidden>
+          <div class="section-heading">
+            <h2>Fotografías registradas</h2>
+            <button id="refresh-button" class="secondary-button" type="button">
+              Actualizar
+            </button>
+          </div>
+
+          <p id="gallery-message" class="section-description" role="status" aria-live="polite">
+            Cargando fotografías...
+          </p>
+
+          <div id="gallery-list" class="gallery-list"></div>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  :global(html),
+  :global(body) {
+    margin: 0;
+    min-height: 100%;
+    background: #0a0a0a;
+  }
+
+  .dashboard {
+    min-height: 100vh;
+    background: #0a0a0a;
+    color: #f5f5f5;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 22px clamp(20px, 5vw, 72px);
+    border-bottom: 1px solid #262626;
+  }
+
+  .brand {
+    color: #fff;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .brand span {
+    color: #fbbf24;
+  }
+
+  .topbar-actions,
+  .section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  .panel-link {
+    color: #d4d4d4;
+    font-size: 14px;
+    text-decoration: none;
+  }
+
+  .panel-link:hover {
+    color: #fbbf24;
+  }
+
+  .content {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 54px 24px 80px;
+  }
+
+  .eyebrow {
+    color: #fbbf24;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+  }
+
+  h1 {
+    margin: 14px 0 10px;
+    font-size: clamp(32px, 5vw, 46px);
+    letter-spacing: -0.04em;
+  }
+
+  .description,
+  .section-description {
+    color: #a3a3a3;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .upload-panel {
+    margin-top: 32px;
+    padding: 26px;
+    border: 1px solid #292929;
+    border-radius: 12px;
+    background: #111;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 21px;
+  }
+
+  .upload-panel .section-description {
+    margin: 10px 0 24px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .field-full {
+    grid-column: 1 / -1;
+  }
+
+  .field label {
+    display: block;
+    margin-bottom: 9px;
+    color: #e5e5e5;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .field input {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 11px 12px;
+    border: 1px solid #383838;
+    border-radius: 6px;
+    background: #090909;
+    color: #f5f5f5;
+    font: inherit;
+  }
+
+  .field input:focus {
+    outline: 1px solid #fbbf24;
+    border-color: #fbbf24;
+  }
+
+  .primary-button,
+  .secondary-button {
+    padding: 11px 15px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .primary-button {
+    margin-top: 22px;
+    background: #fbbf24;
+    color: #171717;
+  }
+
+  .primary-button:hover {
+    background: #fcd34d;
+  }
+
+  .secondary-button {
+    border-color: #383838;
+    background: #141414;
+    color: #eee;
+  }
+
+  .secondary-button:hover {
+    border-color: #fbbf24;
+  }
+
+  button:disabled {
+    cursor: wait;
+    opacity: 0.6;
+  }
+
+  .form-message {
+    color: #a3a3a3;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .gallery-section {
+    margin-top: 52px;
+  }
+
+  .section-heading {
+    margin-bottom: 12px;
+  }
+
+  .gallery-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 24px;
+  }
+
+  :global(.gallery-card) {
+    overflow: hidden;
+    border: 1px solid #292929;
+    border-radius: 10px;
+    background: #111;
+  }
+
+  :global(.gallery-card img) {
+    display: block;
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    background: #171717;
+  }
+
+  :global(.gallery-card-content) {
+    padding: 15px;
+  }
+
+  :global(.gallery-card-title) {
+    margin: 0;
+    font-size: 16px;
+    overflow-wrap: anywhere;
+  }
+
+  :global(.gallery-card-category) {
+    margin: 7px 0 12px;
+    color: #a3a3a3;
+    font-size: 12px;
+  }
+
+  :global(.gallery-card-status) {
+    display: inline-block;
+    margin-bottom: 13px;
+    color: #86efac;
+    font-size: 12px;
+  }
+
+  :global(.gallery-card-status.is-hidden) {
+    color: #fbbf24;
+  }
+
+  :global(.gallery-action) {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background: #171717;
+    color: #f5f5f5;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  :global(.gallery-action:hover) {
+    border-color: #fbbf24;
+  }
+
+  #page-message,
+  #gallery-message {
+    color: #a3a3a3;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 900px) {
+    .gallery-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 560px) {
+    .topbar {
+      flex-wrap: wrap;
+    }
+
+    .topbar-actions {
+      width: 100%;
+    }
+
+    .content {
+      padding: 38px 18px 60px;
+    }
+
+    .upload-panel {
+      padding: 19px;
+    }
+
+    .form-grid,
+    .gallery-list {
+      grid-template-columns: 1fr;
+    }
+
+    .field-full {
+      grid-column: auto;
+    }
+
+    .section-heading {
+      align-items: flex-start;
+    }
+  }
+</style>
+
+<script>
+  import { supabase } from '../../lib/supabase.js';
+
+  const pageMessage = document.querySelector('#page-message');
+  const uploadForm = document.querySelector('#upload-form');
+  const fileInput = document.querySelector('#image-file');
+  const titleInput = document.querySelector('#image-title');
+  const categoryInput = document.querySelector('#image-category');
+  const uploadButton = document.querySelector('#upload-button');
+  const uploadMessage = document.querySelector('#upload-message');
+  const gallerySection = document.querySelector('#gallery-section');
+  const galleryMessage = document.querySelector('#gallery-message');
+  const galleryList = document.querySelector('#gallery-list');
+  const refreshButton = document.querySelector('#refresh-button');
+  const logoutButton = document.querySelector('#logout-button');
+
+  let currentUser = null;
+  let professionalId = null;
+
+  function showUploadMessage(text, type = 'info') {
+    uploadMessage.textContent = text;
+
+    if (type === 'success') {
+      uploadMessage.style.color = '#86efac';
+    } else if (type === 'error') {
+      uploadMessage.style.color = '#fca5a5';
+    } else {
+      uploadMessage.style.color = '#a3a3a3';
+    }
+  }
+
+  async function checkOwnerSession() {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      window.location.replace('/admin/login');
+      return;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('full_name, role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError || profile?.role !== 'owner') {
+      await supabase.auth.signOut();
+      window.location.replace('/admin/login');
+      return;
+    }
+
+    const { data: professional, error: professionalError } = await supabase
+      .from('professionals')
+      .select('id')
+      .eq('profile_id', user.id)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (professionalError || !professional) {
+      pageMessage.textContent =
+        'No encontramos una ficha profesional activa vinculada a tu cuenta.';
+      return;
+    }
+
+    currentUser = user;
+    professionalId = professional.id;
+
+    pageMessage.textContent = `Sesión iniciada como ${profile.full_name}.`;
+    uploadForm.hidden = false;
+    gallerySection.hidden = false;
+
+    await loadGallery();
+  }
+
+  async function loadGallery() {
+    galleryMessage.textContent = 'Cargando fotografías...';
+    galleryList.replaceChildren();
+    refreshButton.disabled = true;
+
+    try {
+      const { data, error } = await supabase
+        .from('gallery_images')
+        .select('id, title, category, image_url, is_active, sort_order')
+        .order('sort_order', { ascending: true })
+        .limit(200);
+
+      if (error) throw error;
+
+      const images = data ?? [];
+
+      if (images.length === 0) {
+        galleryMessage.textContent = 'Todavía no hay fotografías registradas.';
+        return;
+      }
+
+      for (const image of images) {
+        const article = document.createElement('article');
+        article.className = 'gallery-card';
+
+        const img = document.createElement('img');
+        img.src = image.image_url;
+        img.alt = image.title || 'Fotografía de Urban Studio';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+
+        const content = document.createElement('div');
+        content.className = 'gallery-card-content';
+
+        const title = document.createElement('h3');
+        title.className = 'gallery-card-title';
+        title.textContent = image.title || 'Sin título';
+
+        const category = document.createElement('p');
+        category.className = 'gallery-card-category';
+        category.textContent = image.category || 'Sin categoría';
+
+        const status = document.createElement('span');
+        status.className = image.is_active
+          ? 'gallery-card-status'
+          : 'gallery-card-status is-hidden';
+        status.textContent = image.is_active ? 'Publicada' : 'Oculta';
+
+        const actionButton = document.createElement('button');
+        actionButton.type = 'button';
+        actionButton.className = 'gallery-action';
+        actionButton.textContent = image.is_active ? 'Ocultar foto' : 'Publicar foto';
+
+        actionButton.addEventListener('click', async () => {
+          actionButton.disabled = true;
+
+          const { error: updateError } = await supabase
+            .from('gallery_images')
+            .update({ is_active: !image.is_active })
+            .eq('id', image.id);
+
+          if (updateError) {
+            galleryMessage.textContent =
+              `No se pudo actualizar "${image.title}": ${updateError.message}`;
+            actionButton.disabled = false;
+            return;
+          }
+
+          await loadGallery();
+          galleryMessage.textContent = image.is_active
+            ? 'Fotografía ocultada correctamente.'
+            : 'Fotografía publicada correctamente.';
+        });
+
+        content.append(title, category, status, actionButton);
+        article.append(img, content);
+        galleryList.appendChild(article);
+      }
+
+      galleryMessage.textContent =
+        `Se muestran ${images.length} fotografías${images.length === 200 ? ' (máximo inicial de 200)' : ''}.`;
+    } catch (error) {
+      console.error('Error al cargar la galería:', error);
+      galleryMessage.textContent =
+        'No se pudo cargar la galería. Revisá la consola para más detalles.';
+    } finally {
+      refreshButton.disabled = false;
+    }
+  }
+
+  uploadForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    if (!currentUser || !professionalId) {
+      showUploadMessage('La sesión no está verificada. Volvé a iniciar sesión.', 'error');
+      return;
+    }
+
+    const file = fileInput.files?.[0];
+    const title = titleInput.value.trim();
+    const category = categoryInput.value.trim();
+
+    if (!file) {
+      showUploadMessage('Seleccioná una fotografía.', 'error');
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!allowedTypes.includes(file.type)) {
+      showUploadMessage('Usá una imagen JPG, PNG o WebP.', 'error');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      showUploadMessage('La imagen supera el límite de 10 MB.', 'error');
+      return;
+    }
+
+    uploadButton.disabled = true;
+    uploadButton.textContent = 'Subiendo imagen...';
+    showUploadMessage('Preparando una subida segura...');
+
+    try {
+      const { data: lastImage, error: orderError } = await supabase
+        .from('gallery_images')
+        .select('sort_order')
+        .eq('professional_id', professionalId)
+        .order('sort_order', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (orderError) {
+        throw new Error(`No se pudo consultar el orden de las fotos: ${orderError.message}`);
+      }
+
+      const nextSortOrder = (lastImage?.sort_order ?? 0) + 1;
+
+      const { data: signedData, error: signatureError } =
+        await supabase.functions.invoke('cloudinary-signature', {
+          body: {},
+        });
+
+      if (signatureError) {
+        let detail = signatureError.message;
+
+        try {
+          const response = await signatureError.context?.json();
+          if (response?.error) detail = response.error;
+        } catch {
+          // Usamos el mensaje original si el error no contiene JSON.
+        }
+
+        throw new Error(`No se pudo autorizar la subida: ${detail}`);
+      }
+
+      if (
+        !signedData?.signature ||
+        !signedData?.timestamp ||
+        !signedData?.apiKey ||
+        !signedData?.cloudName ||
+        !signedData?.publicId ||
+        !signedData?.folder
+      ) {
+        throw new Error('La función de Cloudinary devolvió una respuesta incompleta.');
+      }
+
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+      uploadData.append('api_key', signedData.apiKey);
+      uploadData.append('timestamp', String(signedData.timestamp));
+      uploadData.append('signature', signedData.signature);
+      uploadData.append('folder', signedData.folder);
+      uploadData.append('public_id', signedData.publicId);
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${signedData.cloudName}/image/upload`,
+        {
+          method: 'POST',
+          body: uploadData,
+        },
+      );
+
+      const cloudinaryResult = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          cloudinaryResult?.error?.message || 'Cloudinary rechazó la imagen.',
+        );
+      }
+
+      const { error: insertError } = await supabase
+        .from('gallery_images')
+        .insert({
+          professional_id: professionalId,
+          created_by: currentUser.id,
+          image_url: cloudinaryResult.secure_url,
+          public_id: cloudinaryResult.public_id,
+          title,
+          category: category || null,
+          is_active: true,
+          sort_order: nextSortOrder,
+        });
+
+      if (insertError) {
+        throw new Error(
+          `La imagen se subió a Cloudinary, pero no se pudo registrar en Supabase. No vuelvas a subirla todavía. Detalle: ${insertError.message}`,
+        );
+      }
+
+      uploadForm.reset();
+      showUploadMessage('¡Fotografía subida y publicada correctamente!', 'success');
+      await loadGallery();
+    } catch (error) {
+      console.error('Error al subir la fotografía:', error);
+
+      showUploadMessage(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo subir la fotografía. Probá nuevamente.',
+        'error',
+      );
+    } finally {
+      uploadButton.disabled = false;
+      uploadButton.textContent = 'Subir y publicar';
+    }
+  });
+
+  refreshButton.addEventListener('click', loadGallery);
+
+  logoutButton.addEventListener('click', async () => {
+    logoutButton.disabled = true;
+
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      pageMessage.textContent = 'No se pudo cerrar la sesión. Probá nuevamente.';
+      logoutButton.disabled = false;
+      return;
+    }
+
+    window.location.replace('/admin/login');
+  });
+
+  checkOwnerSession().catch((error) => {
+    console.error('Error al verificar el propietario:', error);
+    pageMessage.textContent = 'No se pudo verificar la sesión. Volvé a iniciar sesión.';
+  });
+</script>
