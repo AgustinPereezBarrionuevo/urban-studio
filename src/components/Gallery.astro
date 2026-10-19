@@ -1,27 +1,5 @@
 
 ---
-const haircuts = [
-  {
-    title: 'Fade clásico',
-    category: 'Degradado',
-    image: '/images/galeria/corte-2.jpg',
-  },
-  {
-    title: 'Estilo moderno',
-    category: 'Corte moderno',
-    image: '/images/galeria/corte-4.jpg',
-  },
-  {
-    title: 'Corte con textura',
-    category: 'Estilo urbano',
-    image: '/images/galeria/corte-3.jpg',
-  },
-  {
-    title: 'Detalles precisos',
-    category: 'Trabajo de barbería',
-    image: '/images/galeria/corte-5.jpg',
-  },
-];
 ---
 
 <section id="galeria" class="bg-neutral-900 px-6 py-24 sm:px-10">
@@ -31,37 +9,160 @@ const haircuts = [
         <p class="text-xs font-semibold uppercase tracking-[0.3em] text-amber-400">
           Inspiración
         </p>
+
         <h2 class="mt-4 text-4xl font-bold sm:text-5xl">
           Nuestro trabajo habla por nosotros.
         </h2>
       </div>
+
       <p class="max-w-md leading-7 text-neutral-400">
-        Cada corte es diferente. Explorá algunos estilos y encontrá inspiración para tu próximo cambio.
+        Cada corte es diferente. Explorá algunos estilos y encontrá inspiración
+        para tu próximo cambio.
       </p>
     </div>
 
-    <div class="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-      {haircuts.map((haircut) => (
-        <article class="group relative overflow-hidden rounded-xl bg-neutral-950">
-          <img
-            src={haircut.image}
-            alt={haircut.title}
-            loading="lazy"
-            class="h-80 w-full object-cover transition duration-500 group-hover:scale-105"
-          />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent"></div>
-          <div class="absolute inset-x-0 bottom-0 p-5">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">
-              {haircut.category}
-            </p>
-            <h3 class="mt-2 text-xl font-semibold text-white">{haircut.title}</h3>
-          </div>
-        </article>
-      ))}
+    <div
+      id="gallery-grid"
+      class="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4"
+    >
     </div>
 
-    <p class="mt-6 text-sm text-neutral-500">
-      Galería provisional. Las fotografías definitivas se cargarán con autorización del negocio.
+    <p
+      id="gallery-message"
+      class="mt-8 text-sm text-neutral-400"
+      role="status"
+      aria-live="polite"
+    >
+      Cargando galería...
     </p>
+
+    <div class="mt-8 flex justify-center">
+      <button
+        id="gallery-more"
+        type="button"
+        class="hidden rounded-md border border-amber-400/60 px-6 py-3 text-sm font-semibold text-amber-400 transition hover:bg-amber-400 hover:text-neutral-950"
+      >
+        Ver más
+      </button>
+    </div>
   </div>
 </section>
+
+<script>
+  import { supabase } from '../lib/supabase.js';
+
+  const galleryGrid = document.querySelector('#gallery-grid');
+  const galleryMessage = document.querySelector('#gallery-message');
+  const galleryMore = document.querySelector('#gallery-more');
+
+  const pageSize = 8;
+
+  let offset = 0;
+  let loading = false;
+  let canLoadMore = true;
+
+  function createGalleryCard(haircut) {
+    const article = document.createElement('article');
+    article.className =
+      'group relative overflow-hidden rounded-xl bg-neutral-950';
+
+    const image = document.createElement('img');
+    image.src = haircut.image_url;
+    image.alt = haircut.title || 'Trabajo de barbería de Urban Studio';
+    image.loading = 'lazy';
+    image.decoding = 'async';
+    image.className =
+      'h-80 w-full object-cover transition duration-500 group-hover:scale-105';
+
+    const overlay = document.createElement('div');
+    overlay.className =
+      'absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent';
+
+    const caption = document.createElement('div');
+    caption.className = 'absolute inset-x-0 bottom-0 p-5';
+
+    if (haircut.category) {
+      const category = document.createElement('p');
+      category.className =
+        'text-xs font-semibold uppercase tracking-[0.2em] text-amber-400';
+      category.textContent = haircut.category;
+      caption.appendChild(category);
+    }
+
+    const title = document.createElement('h3');
+    title.className = 'mt-2 text-xl font-semibold text-white';
+    title.textContent = haircut.title || 'Trabajo de barbería';
+
+    caption.appendChild(title);
+    article.append(image, overlay, caption);
+
+    return article;
+  }
+
+  async function loadGallery() {
+    if (loading || !canLoadMore) return;
+
+    loading = true;
+    galleryMore.classList.add('hidden');
+
+    if (offset === 0) {
+      galleryMessage.textContent = 'Cargando galería...';
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('gallery_images')
+        .select('id, title, category, image_url, sort_order, created_at')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false })
+        .range(offset, offset + pageSize);
+
+      if (error) throw error;
+
+      const images = data ?? [];
+      const pageImages = images.slice(0, pageSize);
+
+      if (pageImages.length === 0) {
+        canLoadMore = false;
+
+        if (offset === 0) {
+          galleryMessage.textContent =
+            'Todavía no hay fotografías publicadas.';
+        } else {
+          galleryMessage.textContent = '';
+        }
+
+        return;
+      }
+
+      for (const image of pageImages) {
+        galleryGrid.appendChild(createGalleryCard(image));
+      }
+
+      offset += pageImages.length;
+      canLoadMore = images.length > pageSize;
+
+      galleryMessage.textContent = '';
+
+      if (canLoadMore) {
+        galleryMore.textContent = 'Ver más';
+        galleryMore.classList.remove('hidden');
+      }
+    } catch (error) {
+      console.error('Error al cargar la galería:', error);
+
+      galleryMessage.textContent =
+        'No pudimos cargar las fotografías. Probá nuevamente.';
+
+      galleryMore.textContent = 'Reintentar';
+      galleryMore.classList.remove('hidden');
+    } finally {
+      loading = false;
+    }
+  }
+
+  galleryMore.addEventListener('click', loadGallery);
+
+  loadGallery();
+</script>
