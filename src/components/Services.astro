@@ -1,26 +1,18 @@
 
-
 ---
-const services = [
-  {
-    number: '01',
-    name: 'Corte de cabello',
-    description:
-      'Un corte adaptado a tu estilo, con perfilado de cejas incluido.',
-  },
-  {
-    number: '02',
-    name: 'Corte + perfilado de barba',
-    description:
-      'Combiná tu corte con el perfilado de barba para un look prolijo y equilibrado.',
-  },
-  {
-    number: '03',
-    name: 'Perfilado de barba',
-    description:
-      'Definición de contornos y forma para mantener una barba cuidada.',
-  },
-];
+import { supabase } from '../lib/supabase.js';
+import { site } from '../config/site.js';
+
+const { data, error } = await supabase
+  .from('services')
+  .select('id, name, description, price, duration_minutes')
+  .eq('is_active', true)
+  .order('sort_order', { ascending: true });
+
+const services = (data ?? []).map((service, index) => ({
+  ...service,
+  number: String(index + 1).padStart(2, '0'),
+}));
 ---
 
 
@@ -39,29 +31,61 @@ const services = [
       </p>
     </div>
 
-    <div class="mt-12 grid gap-5 md:grid-cols-3">
-      {services.map((service) => (
-        <article class="group rounded-xl border border-white/10 bg-neutral-950 p-7 transition hover:border-amber-400/50">
-          <p class="text-sm font-semibold text-amber-400">{service.number}</p>
+    {error ? (
+      <p class="mt-12 rounded-xl border border-white/10 bg-neutral-950 p-6 text-neutral-300">
+        No pudimos cargar los servicios en este momento.
+      </p>
+    ) : services.length === 0 ? (
+      <p class="mt-12 text-neutral-400">
+        Próximamente encontrarás nuestros servicios.
+      </p>
+    ) : (
+      <div class="mt-12 grid gap-5 md:grid-cols-3">
+        {services.map((service) => (
+          <article class="group rounded-xl border border-white/10 bg-neutral-950 p-7 transition hover:border-amber-400/50">
+            <p class="text-sm font-semibold text-amber-400">
+              {service.number}
+            </p>
 
-          <h3 class="mt-8 text-2xl font-semibold">{service.name}</h3>
+            <h3 class="mt-8 text-2xl font-semibold">
+              {service.name}
+            </h3>
 
-          <p class="mt-4 min-h-14 leading-6 text-neutral-400">
+          <p class="mt-4 leading-6 text-neutral-400">
             {service.description}
-          </p>
+            </p>
 
-          <a
-            href="https://link.agendapro.com/ar/urbanstudio/cdf11a3d"
-            class="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-white transition group-hover:text-amber-400"
-          >
-            Consultar servicio <span aria-hidden="true">↗</span>
-          </a>
-        </article>
-      ))}
-    </div>
+            {service.price != null && (
+              <p class="mt-4 text-sm text-neutral-300">
+                Precio: {new Intl.NumberFormat('es-AR', {
+                  style: 'currency',
+                  currency: 'ARS',
+                  maximumFractionDigits: 2,
+                }).format(Number(service.price))}
+              </p>
+            )}
+
+            {service.duration_minutes != null && (
+              <p class="mt-2 text-sm text-neutral-400">
+                Duración: {service.duration_minutes} minutos
+              </p>
+            )}
+
+                        <a
+                href={site.bookingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-white transition group-hover:text-amber-400"
+                >
+                Consultar servicio <span aria-hidden="true">↗</span>
+                </a>
+          </article>
+        ))}
+      </div>
+    )}
 
     <p class="mt-6 text-sm text-neutral-500">
-      Servicios ilustrativos. Los precios y la oferta definitiva se definirán con el negocio.
+      Consultá disponibilidad y detalles al reservar.
     </p>
   </div>
 </section>
