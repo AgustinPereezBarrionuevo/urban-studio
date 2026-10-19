@@ -1,0 +1,254 @@
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Panel de administración | Urban Studio</title>
+  </head>
+
+  <body>
+    <main class="dashboard">
+      <header class="topbar">
+        <a href="/" class="brand">URBAN<span>.</span> STUDIO</a>
+        <button id="logout-button" type="button">Cerrar sesión</button>
+      </header>
+
+      <section class="content">
+        <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
+        <h1>Hola, <span id="owner-name">...</span>.</h1>
+        <p class="description">
+          Desde acá vas a poder administrar el contenido de Urban Studio.
+        </p>
+
+        <p id="dashboard-message" role="status" aria-live="polite">
+          Verificando sesión...
+        </p>
+
+        <div id="dashboard-content" hidden>
+          <div class="cards">
+            <article class="card">
+              <span>01</span>
+              <h2>Galería</h2>
+              <p>Gestionaremos las fotografías de tus trabajos.</p>
+              <small>Próximamente</small>
+            </article>
+
+            <article class="card">
+              <span>02</span>
+              <h2>Servicios</h2>
+              <p>Precios, duraciones y descripción de cada servicio.</p>
+              <small>Próximamente</small>
+            </article>
+
+            <article class="card">
+              <span>03</span>
+              <h2>Profesionales</h2>
+              <p>Información y fotografías de los profesionales.</p>
+              <small>Próximamente</small>
+            </article>
+          </div>
+
+          <a href="/" class="back-link">Ver sitio web →</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
+
+<style>
+  * {
+    box-sizing: border-box;
+    :global(html),
+:global(body) {
+  margin: 0;
+  min-height: 100%;
+  background: #090909;
+}
+  }
+
+  .dashboard {
+    min-height: 100vh;
+    background: #0a0a0a;
+    color: #f5f5f5;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 22px clamp(24px, 6vw, 80px);
+    border-bottom: 1px solid #262626;
+  }
+
+  .brand {
+    color: white;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+  }
+
+  .brand span {
+    color: #fbbf24;
+  }
+
+  button {
+    padding: 10px 14px;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background: transparent;
+    color: #eee;
+    cursor: pointer;
+  }
+
+  button:hover {
+    border-color: #fbbf24;
+  }
+
+  .content {
+    max-width: 1120px;
+    margin: auto;
+    padding: 64px 24px;
+  }
+
+  .eyebrow {
+    color: #fbbf24;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+  }
+
+  h1 {
+    margin: 16px 0 12px;
+    font-size: clamp(32px, 6vw, 48px);
+    letter-spacing: -0.04em;
+  }
+
+  h1 span {
+    color: #fbbf24;
+  }
+
+  .description {
+    max-width: 600px;
+    color: #a3a3a3;
+    line-height: 1.7;
+  }
+
+  #dashboard-message {
+    color: #a3a3a3;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 42px;
+  }
+
+  .card {
+    padding: 24px;
+    border: 1px solid #292929;
+    border-radius: 12px;
+    background: #111;
+  }
+
+  .card > span {
+    color: #fbbf24;
+    font-size: 12px;
+  }
+
+  .card h2 {
+    margin: 24px 0 10px;
+    font-size: 21px;
+  }
+
+  .card p {
+    min-height: 48px;
+    color: #a3a3a3;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .card small {
+    display: inline-block;
+    margin-top: 12px;
+    color: #fbbf24;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-top: 32px;
+    color: #fbbf24;
+    text-decoration: none;
+  }
+
+  @media (max-width: 700px) {
+    .cards {
+      grid-template-columns: 1fr;
+    }
+
+    .card p {
+      min-height: 0;
+    }
+  }
+</style>
+
+<script>
+  import { supabase } from '../../lib/supabase.js';
+
+  const ownerName = document.querySelector('#owner-name');
+  const dashboardContent = document.querySelector('#dashboard-content');
+  const dashboardMessage = document.querySelector('#dashboard-message');
+  const logoutButton = document.querySelector('#logout-button');
+
+  async function checkOwnerSession() {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      window.location.replace('/admin/login');
+      return;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('full_name, role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError || profile?.role !== 'owner') {
+      await supabase.auth.signOut();
+      window.location.replace('/admin/login');
+      return;
+    }
+
+    ownerName.textContent = profile.full_name;
+    dashboardMessage.textContent = '';
+    dashboardContent.hidden = false;
+  }
+
+  logoutButton.addEventListener('click', async () => {
+    logoutButton.disabled = true;
+    logoutButton.textContent = 'Cerrando sesión...';
+
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      dashboardMessage.textContent =
+        'No se pudo cerrar la sesión. Probá nuevamente.';
+      logoutButton.disabled = false;
+      logoutButton.textContent = 'Cerrar sesión';
+      return;
+    }
+
+    window.location.replace('/admin/login');
+  });
+
+  checkOwnerSession().catch((error) => {
+    console.error('Error al verificar la sesión:', error);
+    dashboardMessage.textContent =
+      'No pudimos verificar tu sesión. Volvé a iniciar sesión.';
+  });
+</script>
