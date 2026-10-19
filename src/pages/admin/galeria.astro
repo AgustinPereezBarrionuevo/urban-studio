@@ -1,4 +1,5 @@
 
+
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -99,6 +100,77 @@
   * {
     box-sizing: border-box;
   }
+
+  :global(.gallery-edit-field) {
+  display: block;
+  margin-top: 12px;
+  color: #a3a3a3;
+  font-size: 12px;
+}
+
+:global(.gallery-edit-input) {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px;
+  border: 1px solid #383838;
+  border-radius: 5px;
+  background: #090909;
+  color: #f5f5f5;
+  font: inherit;
+  font-size: 13px;
+}
+
+:global(.gallery-edit-input:focus) {
+  outline: 1px solid #fbbf24;
+  border-color: #fbbf24;
+}
+
+:global(.gallery-action-primary) {
+  margin-bottom: 8px;
+  border-color: #fbbf24;
+  background: #fbbf24;
+  color: #171717;
+  font-weight: 700;
+}
+
+:global(.gallery-action-primary:hover) {
+  background: #fcd34d;
+}
+
+:global(.gallery-drag-handle) {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  margin-bottom: 14px;
+  border: 1px dashed #454545;
+  border-radius: 6px;
+  background: #0c0c0c;
+  color: #a3a3a3;
+  font-size: 12px;
+  cursor: grab;
+  touch-action: none;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+:global(.gallery-drag-handle:hover) {
+  color: #fbbf24;
+  border-color: #fbbf24;
+}
+
+:global(.gallery-drag-handle:active) {
+  cursor: grabbing;
+}
+
+:global(.gallery-card-ghost) {
+  opacity: 0.35;
+}
+
+:global(.gallery-card-chosen) {
+  outline: 1px solid #fbbf24;
+}
 
   [hidden] {
     display: none !important;
@@ -393,10 +465,14 @@
       align-items: flex-start;
     }
   }
+    
+
+
 </style>
 
 <script>
   import { supabase } from '../../lib/supabase.js';
+  import Sortable from 'sortablejs';
 
   const pageMessage = document.querySelector('#page-message');
   const uploadForm = document.querySelector('#upload-form');
@@ -413,6 +489,7 @@
 
   let currentUser = null;
   let professionalId = null;
+  let gallerySortable = null;
 
   function showUploadMessage(text, type = 'info') {
     uploadMessage.textContent = text;
@@ -496,6 +573,8 @@
       for (const image of images) {
         const article = document.createElement('article');
         article.className = 'gallery-card';
+        article.dataset.id = image.id;
+        article.dataset.sortOrder = String(image.sort_order ?? 0);
 
         const img = document.createElement('img');
         img.src = image.image_url;
@@ -505,14 +584,43 @@
 
         const content = document.createElement('div');
         content.className = 'gallery-card-content';
+        const dragHandle = document.createElement('button');
 
-        const title = document.createElement('h3');
-        title.className = 'gallery-card-title';
-        title.textContent = image.title || 'Sin título';
+        dragHandle.type = 'button';
+        dragHandle.className = 'gallery-drag-handle';
+        dragHandle.textContent = '⠿ Arrastrar para ordenar';
+        dragHandle.title = 'Arrastrá desde acá para cambiar la posición';
+        dragHandle.setAttribute(
+        'aria-label',
+        `Reordenar fotografía: ${image.title || 'Sin título'}`
+        );
 
-        const category = document.createElement('p');
-        category.className = 'gallery-card-category';
-        category.textContent = image.category || 'Sin categoría';
+        const titleField = document.createElement('label');
+        titleField.className = 'gallery-edit-field';
+        titleField.textContent = 'Título';
+
+        const editTitle = document.createElement('input');
+        editTitle.className = 'gallery-edit-input';
+        editTitle.type = 'text';
+        editTitle.maxLength = 100;
+        editTitle.required = true;
+        editTitle.value = image.title || '';
+        editTitle.setAttribute('aria-label', 'Título de la fotografía');
+
+        titleField.appendChild(editTitle);
+
+        const categoryField = document.createElement('label');
+        categoryField.className = 'gallery-edit-field';
+        categoryField.textContent = 'Categoría';
+
+        const editCategory = document.createElement('input');
+        editCategory.className = 'gallery-edit-input';
+        editCategory.type = 'text';
+        editCategory.maxLength = 60;
+        editCategory.value = image.category || '';
+        editCategory.setAttribute('aria-label', 'Categoría de la fotografía');
+
+        categoryField.appendChild(editCategory);
 
         const status = document.createElement('span');
         status.className = image.is_active
@@ -546,13 +654,79 @@
             : 'Fotografía publicada correctamente.';
         });
 
-        content.append(title, category, status, actionButton);
+         const saveButton = document.createElement('button');
+        saveButton.type = 'button';
+        saveButton.className = 'gallery-action gallery-action-primary';
+        saveButton.textContent = 'Guardar cambios';
+
+        saveButton.addEventListener('click', async () => {
+        const titleValue = editTitle.value.trim();
+        const categoryValue = editCategory.value.trim();
+
+        if (!titleValue) {
+            galleryMessage.textContent = 'El título es obligatorio.';
+            editTitle.focus();
+            return;
+        }
+
+        if (!Number.isSafeInteger(orderValue) || orderValue < 0) {
+            galleryMessage.textContent =
+            'El orden debe ser un número entero igual o mayor que cero.';
+            editOrder.focus();
+            return;
+        }
+
+        saveButton.disabled = true;
+        saveButton.textContent = 'Guardando...';
+
+        try {
+            if (saveError) {
+            throw saveError;
+            }
+
+            await loadGallery();
+            galleryMessage.textContent = 'Cambios guardados correctamente.';
+        } catch (error) {
+            console.error('Error al editar la fotografía:', error);
+            galleryMessage.textContent =
+            'No se pudieron guardar los cambios. Revisá la conexión e intentá nuevamente.';
+        } finally {
+            saveButton.disabled = false;
+            saveButton.textContent = 'Guardar cambios';
+        }
+        });
+
+        content.append(
+        dragHandle,
+        titleField,
+        categoryField,
+        status,
+        saveButton,
+        actionButton,
+        );
+
         article.append(img, content);
         galleryList.appendChild(article);
       }
 
       galleryMessage.textContent =
         `Se muestran ${images.length} fotografías${images.length === 200 ? ' (máximo inicial de 200)' : ''}.`;
+
+
+        if (!gallerySortable) {
+        gallerySortable = Sortable.create(galleryList, {
+            animation: 180,
+            handle: '.gallery-drag-handle',
+            draggable: '.gallery-card',
+            ghostClass: 'gallery-card-ghost',
+            chosenClass: 'gallery-card-chosen',
+
+            onEnd: async () => {
+            await saveGalleryOrder();
+            },
+        });
+        }
+
     } catch (error) {
       console.error('Error al cargar la galería:', error);
       galleryMessage.textContent =
@@ -561,6 +735,51 @@
       refreshButton.disabled = false;
     }
   }
+
+  async function saveGalleryOrder() {
+  const cards = Array.from(
+    galleryList.querySelectorAll('.gallery-card')
+  );
+
+  if (!cards.length || !professionalId) return;
+
+  refreshButton.disabled = true;
+  galleryMessage.textContent = 'Guardando nuevo orden...';
+
+  try {
+    // Asignamos posiciones únicas, incluso si antes había números repetidos.
+    const results = await Promise.all(
+      cards.map(async (card, index) => {
+        const newOrder = index + 1;
+
+        const { error } = await supabase
+          .from('gallery_images')
+          .update({ sort_order: newOrder })
+          .eq('id', card.dataset.id)
+          .eq('professional_id', professionalId);
+
+        if (error) throw error;
+
+        return { card, newOrder };
+      })
+    );
+
+    for (const item of results) {
+      item.card.dataset.sortOrder = String(item.newOrder);
+    }
+
+    galleryMessage.textContent = 'Orden guardado correctamente.';
+  } catch (error) {
+    console.error('Error al guardar el orden:', error);
+
+    galleryMessage.textContent =
+      'No se pudo guardar el orden. Recargando las fotografías...';
+
+    await loadGallery();
+  } finally {
+    refreshButton.disabled = false;
+  }
+}
 
   uploadForm.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -701,6 +920,8 @@
   });
 
   refreshButton.addEventListener('click', loadGallery);
+
+
 
   logoutButton.addEventListener('click', async () => {
     logoutButton.disabled = true;
