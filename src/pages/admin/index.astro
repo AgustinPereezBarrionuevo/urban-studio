@@ -28,17 +28,27 @@
         <div id="dashboard-content" hidden>
           <div class="cards">
             <article class="card">
-              <span>01</span>
-              <h2>Galería</h2>
-              <p>Gestionaremos las fotografías de tus trabajos.</p>
-              <small>Próximamente</small>
+            <span>01</span>
+            <h2>Galería</h2>
+            <p>
+                Subí fotografías, editá títulos y categorías, ordená tus trabajos
+                y administrá las publicaciones.
+            </p>
+
+            <a href="/admin/galeria" class="card-action">
+                Administrar galería <span aria-hidden="true">→</span>
+            </a>
             </article>
 
+           
             <article class="card">
-              <span>02</span>
-              <h2>Servicios</h2>
-              <p>Precios, duraciones y descripción de cada servicio.</p>
-              <small>Próximamente</small>
+            <span>02</span>
+            <h2>Servicios</h2>
+            <p>Administrá nombres, descripciones, precios y duraciones.</p>
+
+            <a href="/admin/servicios" class="card-action">
+                Administrar servicios <span aria-hidden="true">→</span>
+            </a>
             </article>
 
             <article class="card">
@@ -147,6 +157,49 @@
     gap: 18px;
     margin-top: 42px;
   }
+
+  
+.card-action {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 13px 15px;
+  border: 1px solid #fbbf24;
+  border-radius: 7px;
+  background: #fbbf24;
+  color: #171717;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.card-action:hover {
+  border-color: #fcd34d;
+  background: #fcd34d;
+  transform: translateY(-1px);
+}
+
+.card-action:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.card-action span {
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+
+.card-action:hover span {
+  transform: translateX(3px);
+}
+
 
   .card {
     padding: 24px;

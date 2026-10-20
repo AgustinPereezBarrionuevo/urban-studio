@@ -1,0 +1,837 @@
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Administrar servicios | Urban Studio</title>
+  </head>
+
+  <body>
+    <main class="dashboard">
+      <header class="topbar">
+        <a href="/" class="brand">URBAN<span>.</span> STUDIO</a>
+
+        <div class="topbar-actions">
+          <a href="/admin/" class="nav-link">Volver al panel</a>
+          <button id="logout-button" class="secondary-button" type="button">
+            Cerrar sesión
+          </button>
+        </div>
+      </header>
+
+      <section class="content">
+        <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
+        <h1>Servicios</h1>
+        <p class="description">
+          Actualizá los servicios, sus precios y la duración de cada turno.
+          Los cambios guardados se reflejarán en la web pública.
+        </p>
+
+        <p id="page-message" role="status" aria-live="polite">
+          Verificando sesión...
+        </p>
+
+        <section id="services-section" hidden>
+          <form id="create-service-form" class="create-service-panel">
+            <div class="create-service-heading">
+                <div>
+                <h2>Agregar un servicio</h2>
+                <p class="description">
+                    Creá un nuevo servicio y publicalo en la página web.
+                </p>
+                </div>
+                <span class="new-service-badge">NUEVO</span>
+            </div>
+
+            <div class="service-fields">
+                <label class="service-field">
+                Nombre del servicio
+                <input
+                    id="new-service-name"
+                    class="service-input"
+                    type="text"
+                    maxlength="100"
+                    placeholder="Ej. Corte infantil"
+                    required
+                />
+                </label>
+
+                <label class="service-field full-width">
+                Descripción
+                <textarea
+                    id="new-service-description"
+                    class="service-input"
+                    maxlength="500"
+                    placeholder="Describí qué incluye el servicio"
+                ></textarea>
+                </label>
+
+                <label class="service-field">
+                Precio en pesos argentinos
+                <input
+                    id="new-service-price"
+                    class="service-input"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Ej. 18000"
+                />
+                </label>
+
+                <label class="service-field">
+                Duración en minutos
+                <input
+                    id="new-service-duration"
+                    class="service-input"
+                    type="number"
+                    min="1"
+                    step="1"
+                    placeholder="Ej. 30"
+                />
+                </label>
+            </div>
+
+            <div class="create-service-footer">
+                <p
+                id="create-service-message"
+                class="create-service-message"
+                role="status"
+                aria-live="polite"
+                ></p>
+
+                <button
+                id="create-service-button"
+                class="primary-button"
+                type="submit"
+                >
+                <span aria-hidden="true">＋</span>
+                Crear servicio
+                </button>
+            </div>
+            </form>
+            <div class="section-heading">
+            <h2>Servicios registrados</h2>
+            <button id="refresh-button" class="secondary-button" type="button">
+              Actualizar
+            </button>
+          </div>
+
+          <p id="services-message" class="muted" role="status" aria-live="polite"></p>
+          <div id="services-list" class="services-list"></div>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  :global(html),
+  :global(body) {
+    margin: 0;
+    min-height: 100%;
+    background: #0a0a0a;
+  }
+
+  .dashboard {
+    min-height: 100vh;
+    background: #0a0a0a;
+    color: #f5f5f5;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 22px clamp(20px, 5vw, 72px);
+    border-bottom: 1px solid #262626;
+  }
+
+  .brand {
+    color: #fff;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+  }
+
+  .brand span {
+    color: #fbbf24;
+  }
+
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .nav-link {
+    color: #d4d4d4;
+    font-size: 13px;
+    text-decoration: none;
+  }
+
+  .nav-link:hover {
+    color: #fbbf24;
+  }
+
+  .content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 54px 24px 80px;
+  }
+
+  .eyebrow {
+    color: #fbbf24;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+  }
+
+  h1 {
+    margin: 14px 0 10px;
+    font-size: clamp(32px, 5vw, 46px);
+    letter-spacing: -0.04em;
+  }
+
+  .description,
+  .muted {
+    color: #a3a3a3;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  #page-message,
+  #services-message {
+    color: #a3a3a3;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 36px;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 21px;
+  }
+
+  .services-list {
+    display: grid;
+    gap: 18px;
+    margin-top: 22px;
+  }
+
+  :global(.service-card) {
+    padding: 24px;
+    border: 1px solid #292929;
+    border-radius: 12px;
+    background: #111;
+  }
+
+  :global(.service-card-heading) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  :global(.service-number) {
+    color: #fbbf24;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+
+  :global(.service-status) {
+    color: #86efac;
+    font-size: 12px;
+  }
+
+  :global(.service-status.inactive) {
+    color: #fbbf24;
+  }
+
+  :global(.service-fields) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  :global(.service-field) {
+    display: block;
+    min-width: 0;
+    color: #d4d4d4;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  :global(.service-field.full-width) {
+    grid-column: 1 / -1;
+  }
+
+  :global(.service-input) {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin-top: 8px;
+    padding: 12px;
+    border: 1px solid #383838;
+    border-radius: 6px;
+    background: #090909;
+    color: #f5f5f5;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  :global(textarea.service-input) {
+    min-height: 88px;
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  :global(.service-input:focus) {
+    outline: 1px solid #fbbf24;
+    border-color: #fbbf24;
+  }
+
+  :global(.service-actions) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  .primary-button,
+  .secondary-button {
+    padding: 11px 15px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .primary-button {
+    background: #fbbf24;
+    color: #171717;
+  }
+
+  .primary-button:hover {
+    background: #fcd34d;
+  }
+
+  .secondary-button {
+    border-color: #383838;
+    background: #141414;
+    color: #eee;
+  }
+
+  .secondary-button:hover {
+    border-color: #fbbf24;
+  }
+
+  button:disabled {
+    cursor: wait;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 600px) {
+    .topbar {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .topbar-actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .content {
+      padding: 38px 18px 60px;
+    }
+
+    :global(.service-card) {
+      padding: 18px;
+    }
+
+    :global(.service-fields) {
+      grid-template-columns: 1fr;
+    }
+
+    :global(.service-field.full-width) {
+      grid-column: auto;
+    }
+  }
+
+  .section-heading {
+  width: 100%;
+  margin-top: 42px;
+  padding-top: 28px;
+  border-top: 1px solid #292929;
+}
+
+
+:global(.service-actions) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid #292929;
+}
+
+:global(.service-actions button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 12px 18px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+:global(.service-save-button) {
+  border: 1px solid #fbbf24;
+  background: #fbbf24;
+  color: #171717;
+}
+
+:global(.service-save-button:hover:not(:disabled)) {
+  border-color: #fcd34d;
+  background: #fcd34d;
+  transform: translateY(-1px);
+}
+
+:global(.service-toggle-button) {
+  border: 1px solid #404040;
+  background: #171717;
+  color: #d4d4d4;
+}
+
+:global(.service-toggle-button.is-active:hover:not(:disabled)) {
+  border-color: #b91c1c;
+  background: #2a1111;
+  color: #fca5a5;
+}
+
+:global(.service-toggle-button.is-inactive) {
+  border-color: #365a42;
+  background: #111b14;
+  color: #86efac;
+}
+
+:global(.service-toggle-button.is-inactive:hover:not(:disabled)) {
+  border-color: #4ade80;
+  background: #17251a;
+  color: #bbf7d0;
+}
+
+:global(.service-actions button:focus-visible) {
+  outline: 2px solid #fbbf24;
+  outline-offset: 3px;
+}
+
+:global(.service-actions button:disabled) {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+
+</style>
+
+<script>
+  import { supabase } from '../../lib/supabase.js';
+
+  const pageMessage = document.querySelector('#page-message');
+  const servicesSection = document.querySelector('#services-section');
+  const servicesMessage = document.querySelector('#services-message');
+  const servicesList = document.querySelector('#services-list');
+  const refreshButton = document.querySelector('#refresh-button');
+  const logoutButton = document.querySelector('#logout-button');
+
+const createServiceForm = document.querySelector('#create-service-form');
+const createServiceButton = document.querySelector('#create-service-button');
+const createServiceMessage = document.querySelector('#create-service-message');
+
+  function createField(labelText, value, options = {}) {
+    const label = document.createElement('label');
+    label.className = `service-field${options.fullWidth ? ' full-width' : ''}`;
+    label.textContent = labelText;
+
+    const input = options.multiline
+      ? document.createElement('textarea')
+      : document.createElement('input');
+
+    input.className = 'service-input';
+    input.value = value ?? '';
+    input.maxLength = options.maxLength ?? 500;
+
+    if (!options.multiline) {
+      input.type = options.type ?? 'text';
+    }
+
+    if (options.min !== undefined) input.min = String(options.min);
+    if (options.step !== undefined) input.step = String(options.step);
+    if (options.placeholder) input.placeholder = options.placeholder;
+
+    label.appendChild(input);
+    return { label, input };
+  }
+
+  async function checkOwnerSession() {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      window.location.replace('/admin/login');
+      return;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('full_name, role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError || profile?.role !== 'owner') {
+      await supabase.auth.signOut();
+      window.location.replace('/admin/login');
+      return;
+    }
+
+    pageMessage.textContent = `Sesión iniciada como ${profile.full_name}.`;
+    servicesSection.hidden = false;
+    await loadServices();
+  }
+
+  async function loadServices() {
+    servicesMessage.textContent = 'Cargando servicios...';
+    servicesList.replaceChildren();
+    refreshButton.disabled = true;
+
+    try {
+      const { data, error } = await supabase
+        .from('services')
+        .select('id, name, description, price, duration_minutes, is_active, sort_order')
+        .order('sort_order', { ascending: true })
+        .limit(100);
+
+      if (error) throw error;
+
+      const services = data ?? [];
+
+      if (services.length === 0) {
+        servicesMessage.textContent = 'Todavía no hay servicios registrados.';
+        return;
+      }
+
+      services.forEach((service, index) => {
+        const card = document.createElement('article');
+        card.className = 'service-card';
+
+        const heading = document.createElement('div');
+        heading.className = 'service-card-heading';
+
+        const number = document.createElement('span');
+        number.className = 'service-number';
+        number.textContent = `SERVICIO ${String(index + 1).padStart(2, '0')}`;
+
+        const status = document.createElement('span');
+        status.className = service.is_active
+          ? 'service-status'
+          : 'service-status inactive';
+        status.textContent = service.is_active ? 'Publicado' : 'Oculto';
+
+        heading.append(number, status);
+
+        const fields = document.createElement('div');
+        fields.className = 'service-fields';
+
+        const nameField = createField('Nombre del servicio', service.name, {
+          maxLength: 100,
+        });
+
+        const descriptionField = createField(
+          'Descripción',
+          service.description,
+          { multiline: true, maxLength: 500, fullWidth: true },
+        );
+
+        const priceField = createField('Precio en pesos argentinos', service.price, {
+          type: 'number',
+          min: 0,
+          step: '0.01',
+          placeholder: 'Ej. 18000',
+        });
+
+        const durationField = createField(
+          'Duración en minutos',
+          service.duration_minutes,
+          { type: 'number', min: 1, step: 1, placeholder: 'Ej. 40' },
+        );
+
+        fields.append(
+          nameField.label,
+          descriptionField.label,
+          priceField.label,
+          durationField.label,
+        );
+
+        const actions = document.createElement('div');
+        actions.className = 'service-actions';
+
+        const saveButton = document.createElement('button');
+        saveButton.type = 'button';
+        saveButton.className = 'primary-button service-save-button';
+        saveButton.textContent = 'Guardar cambios';
+
+        saveButton.addEventListener('click', async () => {
+          const name = nameField.input.value.trim();
+          const description = descriptionField.input.value.trim();
+          const rawPrice = priceField.input.value.trim();
+          const rawDuration = durationField.input.value.trim();
+
+          if (!name) {
+            servicesMessage.textContent = 'El nombre del servicio es obligatorio.';
+            nameField.input.focus();
+            return;
+          }
+
+          const price = rawPrice === '' ? null : Number(rawPrice);
+          const duration = rawDuration === '' ? null : Number(rawDuration);
+
+          if (price !== null && (!Number.isFinite(price) || price < 0)) {
+            servicesMessage.textContent =
+              'El precio debe ser un número igual o mayor que cero.';
+            priceField.input.focus();
+            return;
+          }
+
+          if (
+            duration !== null &&
+            (!Number.isSafeInteger(duration) || duration < 1)
+          ) {
+            servicesMessage.textContent =
+              'La duración debe ser un número entero mayor que cero.';
+            durationField.input.focus();
+            return;
+          }
+
+          saveButton.disabled = true;
+          saveButton.textContent = 'Guardando...';
+          servicesMessage.textContent = '';
+
+          try {
+            const { error: updateError } = await supabase
+              .from('services')
+              .update({
+                name,
+                description: description || null,
+                price,
+                duration_minutes: duration,
+              })
+              .eq('id', service.id);
+
+            if (updateError) throw updateError;
+
+            await loadServices();
+            servicesMessage.textContent = 'Servicio actualizado correctamente.';
+          } catch (error) {
+            console.error('Error al actualizar el servicio:', error);
+            servicesMessage.textContent =
+              'No se pudo guardar el servicio. Revisá los datos e intentá nuevamente.';
+          } finally {
+            saveButton.disabled = false;
+            saveButton.textContent = 'Guardar cambios';
+          }
+        });
+
+        const toggleButton = document.createElement('button');
+        toggleButton.type = 'button';
+        toggleButton.className = service.is_active
+        ? 'secondary-button service-toggle-button is-active'
+        : 'secondary-button service-toggle-button is-inactive';
+        toggleButton.textContent = service.is_active ? 'Ocultar servicio' : 'Publicar servicio';
+
+        toggleButton.addEventListener('click', async () => {
+          toggleButton.disabled = true;
+
+          try {
+            const { error: toggleError } = await supabase
+              .from('services')
+              .update({ is_active: !service.is_active })
+              .eq('id', service.id);
+
+            if (toggleError) throw toggleError;
+
+            await loadServices();
+            servicesMessage.textContent = service.is_active
+              ? 'Servicio ocultado de la web pública.'
+              : 'Servicio publicado en la web pública.';
+          } catch (error) {
+            console.error('Error al cambiar la publicación del servicio:', error);
+            servicesMessage.textContent =
+              'No se pudo cambiar el estado del servicio.';
+          } finally {
+            toggleButton.disabled = false;
+          }
+        });
+
+        actions.append(saveButton, toggleButton);
+        card.append(heading, fields, actions);
+        servicesList.appendChild(card);
+      });
+
+      servicesMessage.textContent =
+        `Se muestran ${services.length} servicios registrados.`;
+    } catch (error) {
+      console.error('Error al cargar servicios:', error);
+      servicesMessage.textContent =
+        'No se pudieron cargar los servicios. Revisá los permisos de Supabase.';
+    } finally {
+      refreshButton.disabled = false;
+    }
+  }
+
+        
+        createServiceForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const name = document.querySelector('#new-service-name').value.trim();
+        const description = document
+            .querySelector('#new-service-description')
+            .value.trim();
+
+        const rawPrice = document.querySelector('#new-service-price').value.trim();
+        const rawDuration = document
+            .querySelector('#new-service-duration')
+            .value.trim();
+
+        const price = rawPrice === '' ? null : Number(rawPrice);
+        const duration = rawDuration === '' ? null : Number(rawDuration);
+
+        if (!name) {
+            createServiceMessage.textContent = 'Ingresá el nombre del servicio.';
+            createServiceMessage.style.color = '#fca5a5';
+            document.querySelector('#new-service-name').focus();
+            return;
+        }
+
+        if (price !== null && (!Number.isFinite(price) || price < 0)) {
+            createServiceMessage.textContent = 'El precio debe ser cero o mayor.';
+            createServiceMessage.style.color = '#fca5a5';
+            return;
+        }
+
+        if (
+            duration !== null &&
+            (!Number.isSafeInteger(duration) || duration < 1)
+        ) {
+            createServiceMessage.textContent =
+            'La duración debe ser un número entero mayor que cero.';
+            createServiceMessage.style.color = '#fca5a5';
+            return;
+        }
+
+        createServiceButton.disabled = true;
+        createServiceButton.textContent = 'Creando servicio...';
+        createServiceMessage.textContent = '';
+
+        try {
+            const { data: lastService, error: orderError } = await supabase
+            .from('services')
+            .select('sort_order')
+            .order('sort_order', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+            if (orderError) throw orderError;
+
+            const nextSortOrder = (lastService?.sort_order ?? 0) + 1;
+
+            const { error: insertError } = await supabase
+            .from('services')
+            .insert({
+                name,
+                description: description || null,
+                price,
+                duration_minutes: duration,
+                is_active: true,
+                sort_order: nextSortOrder,
+            });
+
+            if (insertError) throw insertError;
+
+            createServiceForm.reset();
+
+            createServiceMessage.textContent =
+            'Servicio creado y publicado correctamente.';
+            createServiceMessage.style.color = '#86efac';
+
+            await loadServices();
+        } catch (error) {
+            console.error('Error al crear el servicio:', error);
+
+            createServiceMessage.textContent =
+            'No se pudo crear el servicio. Revisá los permisos y volvé a intentarlo.';
+            createServiceMessage.style.color = '#fca5a5';
+        } finally {
+            createServiceButton.disabled = false;
+            createServiceButton.innerHTML =
+            '<span aria-hidden="true">＋</span> Crear servicio';
+        }
+        });
+
+
+  refreshButton.addEventListener('click', loadServices);
+
+  logoutButton.addEventListener('click', async () => {
+    logoutButton.disabled = true;
+
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      pageMessage.textContent = 'No se pudo cerrar la sesión. Probá nuevamente.';
+      logoutButton.disabled = false;
+      return;
+    }
+
+    window.location.replace('/admin/login');
+  });
+
+  checkOwnerSession().catch((error) => {
+    console.error('Error al verificar propietario:', error);
+    pageMessage.textContent =
+      'No se pudo verificar la sesión. Volvé a iniciar sesión.';
+  });
+</script>

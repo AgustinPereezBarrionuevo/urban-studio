@@ -31,51 +31,77 @@
           Verificando sesión...
         </p>
 
+        
         <form id="upload-form" class="upload-panel" hidden>
-          <h2>Publicar una fotografía</h2>
-          <p class="section-description">
-            Formatos permitidos: JPG, PNG y WebP. Tamaño máximo: 10 MB.
-          </p>
+        <h2>Publicar una fotografía</h2>
 
-          <div class="form-grid">
+        <p class="section-description">
+            Formatos permitidos: JPG, PNG y WebP. Tamaño máximo: 10 MB.
+        </p>
+
+        <div class="form-grid">
             <div class="field field-full">
-              <label for="image-file">Fotografía</label>
-              <input
+            <span class="field-label">Fotografía</span>
+
+            <div class="file-picker">
+                <input
                 id="image-file"
+                class="file-input-hidden"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
+                aria-describedby="file-help selected-file-name"
                 required
-              />
+                />
+
+                <label for="image-file" class="file-picker-button">
+                <span aria-hidden="true">＋</span>
+                Seleccionar fotografía
+                </label>
+
+                <span id="selected-file-name" class="file-name">
+                Ninguna fotografía seleccionada
+                </span>
+            </div>
+
+            <p id="file-help" class="field-help">
+                JPG, PNG o WebP. Tamaño máximo: 10 MB.
+            </p>
             </div>
 
             <div class="field">
-              <label for="image-title">Título</label>
-              <input
+            <label for="image-title">Título</label>
+            <input
                 id="image-title"
                 type="text"
                 maxlength="100"
                 placeholder="Ej. Fade clásico"
                 required
-              />
+            />
             </div>
 
             <div class="field">
-              <label for="image-category">Categoría</label>
-              <input
+            <label for="image-category">Categoría</label>
+            <input
                 id="image-category"
                 type="text"
                 maxlength="60"
                 placeholder="Ej. Degradado"
-              />
+            />
             </div>
-          </div>
+        </div>
 
-          <button id="upload-button" class="primary-button" type="submit">
+        <button id="upload-button" class="primary-button" type="submit">
             Subir y publicar
-          </button>
+        </button>
 
-          <p id="upload-message" class="form-message" role="status" aria-live="polite"></p>
+        <p
+            id="upload-message"
+            class="form-message"
+            role="status"
+            aria-live="polite"
+        ></p>
         </form>
+
 
         <section id="gallery-section" class="gallery-section" hidden>
           <div class="section-heading">
@@ -379,6 +405,8 @@
     margin-top: 24px;
   }
 
+  
+
   :global(.gallery-card) {
     overflow: hidden;
     border: 1px solid #292929;
@@ -479,6 +507,84 @@
       align-items: flex-start;
     }
   }
+
+
+  
+.field-label {
+  display: block;
+  margin-bottom: 9px;
+  color: #e5e5e5;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.file-picker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 13px;
+}
+
+.field input.file-input-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.file-picker-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0 !important;
+  padding: 12px 17px;
+  border: 1px solid #5c4a24;
+  border-radius: 7px;
+  background: #171717;
+  color: #f5f5f5;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+  background 0.2s ease,
+  border-color 0.2s ease;
+}
+
+.file-picker-button:hover {
+  background: #242424;
+  border-color: #d4a72c;
+}
+
+.file-picker-button span {
+  color: #fbbf24;
+  font-size: 18px;
+}
+
+.field input.file-input-hidden:focus-visible + .file-picker-button {
+  outline: 2px solid #fbbf24;
+  outline-offset: 3px;
+}
+
+.file-name {
+  color: #a3a3a3;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.field-help {
+  margin-top: 9px;
+  color: #737373;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
     
 
     
@@ -493,6 +599,7 @@
   const pageMessage = document.querySelector('#page-message');
   const uploadForm = document.querySelector('#upload-form');
   const fileInput = document.querySelector('#image-file');
+  const selectedFileName = document.querySelector('#selected-file-name');
   const titleInput = document.querySelector('#image-title');
   const categoryInput = document.querySelector('#image-category');
   const uploadButton = document.querySelector('#upload-button');
@@ -506,6 +613,11 @@
   let currentUser = null;
   let professionalId = null;
   let gallerySortable = null;
+
+  fileInput.addEventListener('change', () => {
+  selectedFileName.textContent =
+    fileInput.files?.[0]?.name || 'Ninguna fotografía seleccionada';
+});
 
   function showUploadMessage(text, type = 'info') {
     uploadMessage.textContent = text;
@@ -981,6 +1093,7 @@
       }
 
       uploadForm.reset();
+      selectedFileName.textContent = 'Ninguna fotografía seleccionada';
       showUploadMessage('¡Fotografía subida y publicada correctamente!', 'success');
       await loadGallery();
     } catch (error) {
