@@ -1,0 +1,687 @@
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Datos del negocio | Urban Studio</title>
+  </head>
+
+  <body>
+    <main class="dashboard">
+      <header class="topbar">
+        <a href="/" class="brand">URBAN<span>.</span> STUDIO</a>
+        <div class="topbar-actions">
+          <a href="/admin/" class="nav-link">Volver al panel</a>
+          <button id="logout-button" class="secondary-button" type="button">
+            Cerrar sesión
+          </button>
+        </div>
+      </header>
+
+      <section class="content">
+        <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
+        <h1>Datos del negocio</h1>
+        <p class="description">
+          Administrá la información de contacto, las reservas y los horarios de Urban Studio.
+        </p>
+
+        <p id="page-message" role="status" aria-live="polite">
+          Verificando sesión...
+        </p>
+
+        <form id="business-form" class="settings-form" hidden>
+          <section class="settings-section">
+            <h2>Información general</h2>
+            <p class="section-description">
+              Estos son los datos principales del negocio.
+            </p>
+
+            <div class="form-grid">
+              <div class="field field-full">
+                <label for="business-name">Nombre del negocio</label>
+                <input
+                  id="business-name"
+                  type="text"
+                  maxlength="100"
+                  required
+                />
+              </div>
+
+              <div class="field field-full">
+                <label for="business-address">Dirección</label>
+                <input
+                  id="business-address"
+                  type="text"
+                  maxlength="250"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label for="business-instagram">Instagram (URL)</label>
+                <input
+                  id="business-instagram"
+                  type="url"
+                  placeholder="https://www.instagram.com/..."
+                />
+              </div>
+
+              <div class="field">
+                <label for="business-whatsapp">WhatsApp</label>
+                <input
+                  id="business-whatsapp"
+                  type="tel"
+                  maxlength="30"
+                  placeholder="549381..."
+                />
+                <p class="field-help">
+                  Usá el número con código de país y área, sin necesidad de espacios.
+                </p>
+              </div>
+
+              <div class="field field-full">
+                <label for="business-booking">Enlace de reservas</label>
+                <input
+                  id="business-booking"
+                  type="url"
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
+          </section>
+
+          <section class="settings-section">
+            <h2>Horarios de atención</h2>
+            <p class="section-description">
+              Marcá los días de atención. Los horarios se pueden dejar vacíos mientras estén por definirse.
+            </p>
+
+            <div class="schedule-header">
+              <span>Día</span>
+              <span>Apertura</span>
+              <span>Cierre</span>
+            </div>
+
+            <div id="schedule-fields" class="schedule-fields"></div>
+          </section>
+
+          <div class="form-footer">
+            <p id="save-message" role="status" aria-live="polite"></p>
+            <button id="save-button" class="primary-button" type="submit">
+              Guardar cambios
+            </button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  :global(html),
+  :global(body) {
+    margin: 0;
+    min-height: 100%;
+    background: #0a0a0a;
+  }
+
+  .dashboard {
+    min-height: 100vh;
+    background: #0a0a0a;
+    color: #f5f5f5;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 22px clamp(20px, 5vw, 72px);
+    border-bottom: 1px solid #262626;
+  }
+
+  .brand {
+    color: #fff;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+  }
+
+  .brand span {
+    color: #fbbf24;
+  }
+
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .nav-link {
+    color: #d4d4d4;
+    font-size: 13px;
+    text-decoration: none;
+  }
+
+  .nav-link:hover {
+    color: #fbbf24;
+  }
+
+  .content {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 54px 24px 80px;
+  }
+
+  .eyebrow {
+    color: #fbbf24;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+  }
+
+  h1 {
+    margin: 14px 0 10px;
+    font-size: clamp(32px, 5vw, 46px);
+    letter-spacing: -0.04em;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 21px;
+  }
+
+  .description,
+  .section-description {
+    color: #a3a3a3;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  #page-message,
+  #save-message {
+    color: #a3a3a3;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .settings-section {
+    margin-top: 30px;
+    padding: 26px;
+    border: 1px solid #292929;
+    border-radius: 12px;
+    background: #111;
+  }
+
+  .section-description {
+    margin: 10px 0 24px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .field-full {
+    grid-column: 1 / -1;
+  }
+
+  .field label {
+    display: block;
+    margin-bottom: 8px;
+    color: #e5e5e5;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .field input {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 12px;
+    border: 1px solid #383838;
+    border-radius: 6px;
+    background: #090909;
+    color: #f5f5f5;
+    font: inherit;
+    font-size: 14px;
+  }
+
+  .field input:focus {
+    outline: 1px solid #fbbf24;
+    border-color: #fbbf24;
+  }
+
+  .field-help {
+    margin: 8px 0 0;
+    color: #737373;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .schedule-header,
+  :global(.schedule-row) {
+    display: grid;
+    grid-template-columns: minmax(130px, 1fr) minmax(100px, 0.8fr) minmax(100px, 0.8fr);
+    align-items: center;
+    gap: 14px;
+  }
+
+  .schedule-header {
+    margin-bottom: 10px;
+    color: #a3a3a3;
+    font-size: 12px;
+  }
+
+  .schedule-fields {
+    display: grid;
+    gap: 10px;
+  }
+
+  :global(.schedule-row) {
+    padding: 12px;
+    border: 1px solid #292929;
+    border-radius: 7px;
+    background: #0b0b0b;
+  }
+
+  :global(.schedule-day-label) {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #e5e5e5;
+    font-size: 13px;
+  }
+
+  :global(.schedule-day-label input) {
+    accent-color: #fbbf24;
+    width: 16px;
+    height: 16px;
+  }
+
+  :global(.schedule-time) {
+    width: 100%;
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid #383838;
+    border-radius: 6px;
+    background: #101010;
+    color: #f5f5f5;
+    font: inherit;
+    font-size: 13px;
+  }
+
+  :global(.schedule-time:focus) {
+    outline: 1px solid #fbbf24;
+    border-color: #fbbf24;
+  }
+
+  .form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 26px;
+  }
+
+  .primary-button,
+  .secondary-button {
+    min-height: 43px;
+    padding: 12px 17px;
+    border-radius: 7px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  }
+
+  .primary-button {
+    border: 1px solid #fbbf24;
+    background: #fbbf24;
+    color: #171717;
+  }
+
+  .primary-button:hover:not(:disabled) {
+    background: #fcd34d;
+    transform: translateY(-1px);
+  }
+
+  .secondary-button {
+    border: 1px solid #383838;
+    background: #141414;
+    color: #eee;
+  }
+
+  .secondary-button:hover {
+    border-color: #fbbf24;
+  }
+
+  button:disabled {
+    cursor: wait;
+    opacity: 0.6;
+  }
+
+  button:focus-visible,
+  a:focus-visible {
+    outline: 2px solid #fbbf24;
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 620px) {
+    .topbar {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .topbar-actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .content {
+      padding: 38px 18px 60px;
+    }
+
+    .settings-section {
+      padding: 18px;
+    }
+
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .field-full {
+      grid-column: auto;
+    }
+
+    .schedule-header,
+    :global(.schedule-row) {
+      grid-template-columns: minmax(90px, 1fr) minmax(80px, 0.8fr) minmax(80px, 0.8fr);
+      gap: 8px;
+    }
+
+    .schedule-header {
+      font-size: 11px;
+    }
+
+    :global(.schedule-row) {
+      padding: 9px 6px;
+    }
+
+    :global(.schedule-time) {
+      padding: 9px 5px;
+      font-size: 12px;
+    }
+
+    :global(.schedule-day-label) {
+      gap: 5px;
+      font-size: 12px;
+    }
+
+    .form-footer {
+      align-items: stretch;
+      flex-direction: column;
+    }
+  }
+</style>
+
+<script>
+  import { supabase } from '../../lib/supabase.js';
+
+  const pageMessage = document.querySelector('#page-message');
+  const businessForm = document.querySelector('#business-form');
+  const saveButton = document.querySelector('#save-button');
+  const saveMessage = document.querySelector('#save-message');
+  const scheduleFields = document.querySelector('#schedule-fields');
+  const logoutButton = document.querySelector('#logout-button');
+
+  const businessName = document.querySelector('#business-name');
+  const businessAddress = document.querySelector('#business-address');
+  const businessInstagram = document.querySelector('#business-instagram');
+  const businessWhatsapp = document.querySelector('#business-whatsapp');
+  const businessBooking = document.querySelector('#business-booking');
+
+  const days = [
+    { key: 'monday', label: 'Lunes', defaultEnabled: false },
+    { key: 'tuesday', label: 'Martes', defaultEnabled: true },
+    { key: 'wednesday', label: 'Miércoles', defaultEnabled: true },
+    { key: 'thursday', label: 'Jueves', defaultEnabled: true },
+    { key: 'friday', label: 'Viernes', defaultEnabled: true },
+    { key: 'saturday', label: 'Sábado', defaultEnabled: true },
+    { key: 'sunday', label: 'Domingo', defaultEnabled: false },
+  ];
+
+  function renderSchedule(savedSchedule) {
+    scheduleFields.replaceChildren();
+
+    const hasSavedSchedule =
+      savedSchedule &&
+      typeof savedSchedule === 'object' &&
+      Object.keys(savedSchedule).length > 0;
+
+    for (const day of days) {
+      const saved = hasSavedSchedule ? savedSchedule[day.key] : null;
+
+      const row = document.createElement('div');
+      row.className = 'schedule-row';
+      row.dataset.dayKey = day.key;
+
+      const dayLabel = document.createElement('label');
+      dayLabel.className = 'schedule-day-label';
+
+      const enabled = document.createElement('input');
+      enabled.type = 'checkbox';
+      enabled.className = 'schedule-enabled';
+      enabled.checked = saved?.enabled ?? day.defaultEnabled;
+      enabled.setAttribute('aria-label', `${day.label}: día de atención`);
+
+      const dayName = document.createElement('span');
+      dayName.textContent = day.label;
+
+      dayLabel.append(enabled, dayName);
+
+      const open = document.createElement('input');
+      open.type = 'time';
+      open.className = 'schedule-time schedule-open';
+      open.value = saved?.open ?? '';
+      open.setAttribute('aria-label', `Apertura ${day.label}`);
+
+      const close = document.createElement('input');
+      close.type = 'time';
+      close.className = 'schedule-time schedule-close';
+      close.value = saved?.close ?? '';
+      close.setAttribute('aria-label', `Cierre ${day.label}`);
+
+      function updateTimeInputs() {
+        open.disabled = !enabled.checked;
+        close.disabled = !enabled.checked;
+        row.style.opacity = enabled.checked ? '1' : '0.55';
+      }
+
+      enabled.addEventListener('change', updateTimeInputs);
+      updateTimeInputs();
+
+      row.append(dayLabel, open, close);
+      scheduleFields.appendChild(row);
+    }
+  }
+
+  async function checkOwnerSession() {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      window.location.replace('/admin/login');
+      return;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('full_name, role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError || profile?.role !== 'owner') {
+      await supabase.auth.signOut();
+      window.location.replace('/admin/login');
+      return;
+    }
+
+    const { data: settings, error: settingsError } = await supabase
+      .from('business_settings')
+      .select('id, name, address, instagram_url, whatsapp_number, booking_url, schedule')
+      .eq('id', 1)
+      .maybeSingle();
+
+    if (settingsError || !settings) {
+      console.error('Error al cargar los datos del negocio:', settingsError);
+      pageMessage.textContent =
+        'No se pudieron cargar los datos del negocio. Revisá los permisos y que exista el registro de configuración.';
+      return;
+    }
+
+    businessName.value = settings.name ?? '';
+    businessAddress.value = settings.address ?? '';
+    businessInstagram.value = settings.instagram_url ?? '';
+    businessWhatsapp.value = settings.whatsapp_number ?? '';
+    businessBooking.value = settings.booking_url ?? '';
+
+    renderSchedule(settings.schedule ?? {});
+
+    pageMessage.textContent = `Sesión iniciada como ${profile.full_name}.`;
+    businessForm.hidden = false;
+  }
+
+  businessForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const name = businessName.value.trim();
+    const address = businessAddress.value.trim();
+    const instagram = businessInstagram.value.trim();
+    const whatsapp = businessWhatsapp.value.trim();
+    const booking = businessBooking.value.trim();
+
+    if (!name || !address) {
+      saveMessage.textContent = 'El nombre y la dirección son obligatorios.';
+      saveMessage.style.color = '#fca5a5';
+      return;
+    }
+
+    for (const [label, value] of [
+      ['Instagram', instagram],
+      ['Enlace de reservas', booking],
+    ]) {
+      if (!value) continue;
+
+      try {
+        const url = new URL(value);
+
+        if (!['http:', 'https:'].includes(url.protocol)) {
+          throw new Error('Protocolo inválido');
+        }
+      } catch {
+        saveMessage.textContent = `Ingresá una URL válida para ${label}.`;
+        saveMessage.style.color = '#fca5a5';
+        return;
+      }
+    }
+
+    const schedule = {};
+
+    for (const day of days) {
+      const row = scheduleFields.querySelector(
+        `[data-day-key="${day.key}"]`,
+      );
+
+      const enabled = row.querySelector('.schedule-enabled').checked;
+      const open = row.querySelector('.schedule-open').value;
+      const close = row.querySelector('.schedule-close').value;
+
+      if (enabled && ((open && !close) || (!open && close))) {
+        saveMessage.textContent =
+          `Completá tanto la apertura como el cierre de ${day.label}, o dejá ambos vacíos.`;
+        saveMessage.style.color = '#fca5a5';
+        return;
+      }
+
+      if (enabled && open && close && open >= close) {
+        saveMessage.textContent =
+          `El cierre de ${day.label} debe ser posterior a la apertura.`;
+        saveMessage.style.color = '#fca5a5';
+        return;
+      }
+
+      schedule[day.key] = {
+        enabled,
+        open: enabled ? open : '',
+        close: enabled ? close : '',
+      };
+    }
+
+    saveButton.disabled = true;
+    saveButton.textContent = 'Guardando...';
+    saveMessage.textContent = '';
+
+    try {
+      const { error: updateError } = await supabase
+        .from('business_settings')
+        .update({
+          name,
+          address,
+          instagram_url: instagram || null,
+          whatsapp_number: whatsapp || null,
+          booking_url: booking || null,
+          schedule,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', 1);
+
+      if (updateError) throw updateError;
+
+      saveMessage.textContent = 'Datos del negocio guardados correctamente.';
+      saveMessage.style.color = '#86efac';
+    } catch (error) {
+      console.error('Error al guardar los datos del negocio:', error);
+      saveMessage.textContent =
+        'No se pudieron guardar los cambios. Revisá la conexión y los permisos de Supabase.';
+      saveMessage.style.color = '#fca5a5';
+    } finally {
+      saveButton.disabled = false;
+      saveButton.textContent = 'Guardar cambios';
+    }
+  });
+
+  logoutButton.addEventListener('click', async () => {
+    logoutButton.disabled = true;
+
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      pageMessage.textContent = 'No se pudo cerrar la sesión. Probá nuevamente.';
+      logoutButton.disabled = false;
+      return;
+    }
+
+    window.location.replace('/admin/login');
+  });
+
+  checkOwnerSession().catch((error) => {
+    console.error('Error al verificar los datos del negocio:', error);
+    pageMessage.textContent = 'No se pudieron cargar los datos. Volvé a iniciar sesión.';
+  });
+</script>
