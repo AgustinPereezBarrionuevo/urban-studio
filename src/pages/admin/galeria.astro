@@ -920,27 +920,36 @@ fileInput.addEventListener('change', async () => {
             return;
         }
 
-        if (!Number.isSafeInteger(orderValue) || orderValue < 0) {
-            galleryMessage.textContent =
-            'El orden debe ser un número entero igual o mayor que cero.';
-            editOrder.focus();
-            return;
-        }
-
         saveButton.disabled = true;
         saveButton.textContent = 'Guardando...';
 
         try {
+            const { error: saveError } = await supabase
+            .from('gallery_images')
+            .update({
+                title: titleValue,
+                category: categoryValue || null,
+            })
+            .eq('id', image.id)
+            .eq('professional_id', professionalId);
+
             if (saveError) {
             throw saveError;
             }
 
-            await loadGallery();
-            galleryMessage.textContent = 'Cambios guardados correctamente.';
+            // Actualizar los datos locales después de guardar correctamente.
+            image.title = titleValue;
+            image.category = categoryValue || null;
+
+            galleryMessage.textContent =
+            'Cambios guardados correctamente.';
         } catch (error) {
             console.error('Error al editar la fotografía:', error);
+
             galleryMessage.textContent =
-            'No se pudieron guardar los cambios. Revisá la conexión e intentá nuevamente.';
+            error instanceof Error
+                ? `No se pudieron guardar los cambios: ${error.message}`
+                : 'No se pudieron guardar los cambios. Intentá nuevamente.';
         } finally {
             saveButton.disabled = false;
             saveButton.textContent = 'Guardar cambios';

@@ -67,9 +67,20 @@
     article.className =
       'group relative overflow-hidden rounded-xl bg-neutral-950';
 
-    const image = document.createElement('img');
-    image.src = haircut.image_url;
-    image.alt = haircut.title || 'Trabajo de barbería de Urban Studio';
+        const image = document.createElement('img');
+
+        const croppedImageUrl = getCloudinaryCroppedUrl(
+        haircut.image_url,
+        {
+            crop_x: haircut.crop_x,
+            crop_y: haircut.crop_y,
+            crop_width: haircut.crop_width,
+            crop_height: haircut.crop_height,
+        }
+        );
+
+        image.src = croppedImageUrl;
+        image.alt = haircut.title || 'Trabajo de barbería de Urban Studio';
     image.loading = 'lazy';
     image.decoding = 'async';
     image.className =
@@ -113,7 +124,7 @@
     try {
       const { data, error } = await supabase
         .from('gallery_images')
-        .select('id, title, category, image_url, sort_order, created_at')
+        .select('id, title, category, image_url, sort_order, created_at, crop_x, crop_y,crop_width,crop_height')
         .eq('is_active', true)
         .order('sort_order', { ascending: true })
         .order('created_at', { ascending: false })
