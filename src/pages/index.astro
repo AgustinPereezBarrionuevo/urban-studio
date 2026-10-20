@@ -62,22 +62,31 @@ import { site } from '../config/site';
           Encontranos
         </p>
 
-        <h3 class="mt-4 text-2xl font-bold">
-          {site.name}
-        </h3>
+        <h3 id="business-contact-name" class="mt-4 text-2xl font-bold">
+		{site.name}
+		</h3>
 
-        <p class="mt-4 leading-7 text-neutral-400">
-          {site.address}
-        </p>
+		<p
+		id="business-contact-address"
+		class="mt-4 leading-7 text-neutral-400"
+		>
+		{site.address}
+		</p>
 
-        <div class="mt-6 border-t border-white/10 pt-6">
-          <p class="text-sm text-neutral-500">Días de atención</p>
-          <p class="mt-2 font-medium">{site.schedule}</p>
-        </div>
+		<div class="mt-6 border-t border-white/10 pt-6">
+		<p class="text-sm text-neutral-500">
+			Días de atención
+		</p>
+
+		<p id="business-contact-schedule" class="mt-2 font-medium">
+			{site.schedule}
+		</p>
+		</div>
 
         <div class="mt-8 flex flex-wrap gap-3">
           <a
             href={site.bookingUrl}
+			data-business-link="booking"
             target="_blank"
             rel="noopener noreferrer"
             class="rounded-md bg-amber-400 px-5 py-3 font-semibold text-neutral-950 transition hover:bg-amber-300"
@@ -85,18 +94,20 @@ import { site } from '../config/site';
             Reservar turno
           </a>
 
-          <a
-            href={site.mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="rounded-md border border-neutral-700 px-5 py-3 font-semibold transition hover:border-amber-400 hover:text-amber-400"
-          >
-            Cómo llegar ↗
-          </a>
+         <a
+			id="business-maps-link"
+			href={site.mapsUrl}
+			target="_blank"
+			rel="noopener noreferrer"
+			class="rounded-md border border-neutral-700 px-5 py-3 font-semibold transition hover:border-amber-400 hover:text-amber-400"
+			>
+			Cómo llegar ↗
+			</a>
         </div>
 
         <a
           href={site.instagram}
+		  id="contact-instagram-link"
           target="_blank"
           rel="noopener noreferrer"
           class="mt-6 w-fit text-sm text-neutral-400 transition hover:text-amber-400"
@@ -108,6 +119,7 @@ import { site } from '../config/site';
       <!-- Mapa de Google Maps -->
       <div class="min-h-[350px] overflow-hidden rounded-2xl border border-white/10 md:min-h-[420px]">
         <iframe
+		  id="business-map-frame"
           src={`https://maps.google.com/maps?q=${encodeURIComponent(site.address)}&output=embed`}
           title="Ubicación de Urban Studio en Yerba Buena"
           class="h-full min-h-[350px] w-full md:min-h-[420px]"
@@ -123,4 +135,148 @@ import { site } from '../config/site';
   </main>
 
   <Footer />
+
+  <script>
+    import { supabase } from '../lib/supabase.js';
+
+    const nameElement = document.querySelector('#business-contact-name');
+    const addressElement = document.querySelector('#business-contact-address');
+    const scheduleElement = document.querySelector('#business-contact-schedule');
+    const mapsLink = document.querySelector('#business-maps-link');
+    const mapFrame = document.querySelector('#business-map-frame');
+    const instagramLink = document.querySelector('#contact-instagram-link');
+
+    const fallbackSchedule =
+      scheduleElement?.textContent?.trim() || 'Horarios a confirmar';
+
+    const weekDays = [
+      { key: 'monday', label: 'Lunes' },
+      { key: 'tuesday', label: 'Martes' },
+      { key: 'wednesday', label: 'Miércoles' },
+      { key: 'thursday', label: 'Jueves' },
+      { key: 'friday', label: 'Viernes' },
+      { key: 'saturday', label: 'Sábado' },
+      { key: 'sunday', label: 'Domingo' },
+    ];
+
+    function formatSchedule(schedule) {
+      if (!schedule || typeof schedule !== 'object' ||
+          Object.keys(schedule).length === 0) {
+        return fallbackSchedule;
+      }
+
+      const activeDays = weekDays.filter(
+        (day) => schedule[day.key]?.enabled
+      );
+
+      if (activeDays.length === 0) {
+        return 'Horarios a confirmar';
+      }
+
+      const hasConfiguredHours = activeDays.some(
+        (day) => schedule[day.key]?.open && schedule[day.key]?.close
+      );
+
+      if (hasConfiguredHours) {
+        return activeDays.map((day) => {
+          const daySchedule = schedule[day.key];
+
+          return daySchedule.open && daySchedule.close
+            ? `${day.label}: ${daySchedule.open}–${daySchedule.close}`
+            : `${day.label}: horario a confirmar`;
+        }).join(' · ');
+      }
+
+      const firstIndex = weekDays.findIndex(
+        (day) => day.key === activeDays[0].key
+      );
+
+      const lastIndex = weekDays.findIndex(
+        (day) => day.key === activeDays[activeDays.length - 1].key
+      );
+
+      const isConsecutive =
+        lastIndex - firstIndex + 1 === activeDays.length;
+
+      if (isConsecutive && activeDays.length > 1) {
+        return `${activeDays[0].label} a ${activeDays[activeDays.length - 1].label.toLowerCase()}`;
+      }
+
+      return activeDays.map((day) => day.label).join(', ');
+    }
+
+    async function loadBusinessDetails() {
+      const { data, error } = await supabase
+        .from('business_settings')
+        .select('name, address, instagram_url, booking_url, schedule')
+        .eq('id', 1)
+        .maybeSingle();
+
+      if (error || !data) {
+        console.error('No se pudieron cargar los datos del negocio:', error);
+        return;
+      }
+
+      if (data.name && nameElement) {
+        nameElement.textContent = data.name;
+      }
+
+      if (data.address) {
+        if (addressElement) {
+          addressElement.textContent = data.address;
+        }
+
+        const encodedAddress = encodeURIComponent(data.address);
+
+        if (mapsLink) {
+          mapsLink.href =
+            `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+        }
+
+        if (mapFrame) {
+          mapFrame.src =
+            `https://maps.google.com/maps?q=${encodedAddress}&output=embed`;
+        }
+      }
+
+      if (scheduleElement) {
+        scheduleElement.textContent = formatSchedule(data.schedule);
+      }
+
+      if (data.instagram_url && instagramLink) {
+        try {
+          const url = new URL(data.instagram_url);
+
+          if (
+            url.protocol === 'https:' &&
+            (url.hostname === 'instagram.com' ||
+              url.hostname.endsWith('.instagram.com'))
+          ) {
+            instagramLink.href = url.href;
+          }
+        } catch {
+          console.warn('La URL de Instagram guardada no es válida.');
+        }
+      }
+
+      if (data.booking_url) {
+        try {
+          const url = new URL(data.booking_url);
+
+          if (url.protocol === 'https:') {
+            document
+              .querySelectorAll('a[data-business-link="booking"]')
+              .forEach((link) => {
+                link.href = url.href;
+              });
+          }
+        } catch {
+          console.warn('La URL de reservas guardada no es válida.');
+        }
+      }
+    }
+
+    loadBusinessDetails();
+  </script>
+
 </Layout>

@@ -17,6 +17,7 @@ import { site } from '../config/site';
 
       <!-- Instagram -->
       <a
+        id="footer-instagram-link"
         href={site.instagram}
         target="_blank"
         rel="noopener noreferrer"
@@ -45,6 +46,7 @@ import { site } from '../config/site';
       <!-- WhatsApp: enlace pendiente del número del negocio -->
                 
             <a
+              id="footer-whatsapp-link"
             href={`https://wa.me/${site.whatsapp}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -74,3 +76,78 @@ import { site } from '../config/site';
 
   </div>
 </footer>
+
+
+
+<script>
+  import { supabase } from '../lib/supabase.js';
+
+  const instagramLink =
+    document.querySelector<HTMLAnchorElement>('#footer-instagram-link');
+
+  const whatsappLink =
+    document.querySelector<HTMLAnchorElement>('#footer-whatsapp-link');
+
+  async function loadBusinessContact() {
+    const { data, error } = await supabase
+      .from('business_settings')
+      .select('instagram_url, whatsapp_number, booking_url')
+      .eq('id', 1)
+      .maybeSingle();
+
+    if (error) {
+      console.error('No se pudieron cargar los enlaces del negocio:', error);
+      return;
+    }
+
+    if (!data) return;
+
+    // Instagram: usar la URL guardada si es válida.
+    if (data.instagram_url && instagramLink) {
+      try {
+        const url = new URL(data.instagram_url);
+
+        if (
+          url.protocol === 'https:' &&
+          (url.hostname === 'instagram.com' ||
+            url.hostname.endsWith('.instagram.com'))
+        ) {
+          instagramLink.href = url.href;
+        }
+      } catch {
+        console.warn('La URL de Instagram guardada no es válida.');
+      }
+    }
+
+    // WhatsApp: convertir el número a dígitos para construir wa.me.
+    if (data.whatsapp_number && whatsappLink) {
+      const phone = data.whatsapp_number.replace(/\D/g, '');
+
+      if (phone.length >= 10 && phone.length <= 15) {
+        whatsappLink.href = `https://wa.me/${phone}`;
+      }
+    }
+
+    // Actualizar los enlaces de reservas en toda la página.
+    if (data.booking_url) {
+    try {
+        const url = new URL(data.booking_url);
+
+        if (url.protocol === 'https:') {
+        document
+            .querySelectorAll<HTMLAnchorElement>(
+            'a[data-business-link="booking"]'
+            )
+            .forEach((link) => {
+            link.href = url.href;
+            });
+        }
+    } catch {
+        console.warn('La URL de reservas guardada no es válida.');
+        }
+    }
+  }
+
+  loadBusinessContact();
+</script>
+
