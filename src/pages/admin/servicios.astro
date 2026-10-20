@@ -465,6 +465,19 @@
 }
 
 
+:global(.service-delete-button) {
+  border: 1px solid #653232;
+  background: #1c1010;
+  color: #fca5a5;
+}
+
+:global(.service-delete-button:hover:not(:disabled)) {
+  border-color: #ef4444;
+  background: #351414;
+  color: #fecaca;
+}
+
+
 </style>
 
 <script>
@@ -707,7 +720,48 @@ const createServiceMessage = document.querySelector('#create-service-message');
           }
         });
 
-        actions.append(saveButton, toggleButton);
+                const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'secondary-button service-delete-button';
+        deleteButton.textContent = 'Eliminar servicio';
+
+        deleteButton.addEventListener('click', async () => {
+          const confirmed = window.confirm(
+            `¿Eliminar permanentemente "${service.name}"?\n\n` +
+            'Esta acción no se puede deshacer. ' +
+            'Si solo querés dejar de ofrecerlo temporalmente, elegí "Ocultar servicio".'
+          );
+
+          if (!confirmed) return;
+
+          deleteButton.disabled = true;
+          deleteButton.textContent = 'Eliminando...';
+          servicesMessage.textContent = '';
+
+          try {
+            const { error: deleteError } = await supabase
+              .from('services')
+              .delete()
+              .eq('id', service.id);
+
+            if (deleteError) {
+              throw deleteError;
+            }
+
+            await loadServices();
+            servicesMessage.textContent =
+              'Servicio eliminado permanentemente.';
+          } catch (error) {
+            console.error('Error al eliminar el servicio:', error);
+            servicesMessage.textContent =
+              'No se pudo eliminar el servicio. Revisá los permisos e intentá nuevamente.';
+          } finally {
+            deleteButton.disabled = false;
+            deleteButton.textContent = 'Eliminar servicio';
+          }
+        });
+
+        actions.append(saveButton, toggleButton, deleteButton);
         card.append(heading, fields, actions);
         servicesList.appendChild(card);
       });

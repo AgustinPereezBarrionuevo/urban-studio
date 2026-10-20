@@ -1,7 +1,7 @@
 
 ---
 import { supabase } from '../lib/supabase.js';
-import { site } from '../config/site.js';
+import { site } from '../config/site';
 
 const { data, error } = await supabase
   .from('services')
@@ -15,8 +15,11 @@ const services = (data ?? []).map((service, index) => ({
 }));
 ---
 
-
-<section id="servicios" class="bg-neutral-900 px-6 py-24 sm:px-10">
+<section
+  id="servicios"
+  data-fallback-booking-url={site.bookingUrl}
+  class="bg-neutral-900 px-6 py-24 sm:px-10"
+>
   <div class="mx-auto max-w-7xl">
     <p class="text-xs font-semibold uppercase tracking-[0.3em] text-amber-400">
       Lo que hacemos
@@ -26,67 +29,210 @@ const services = (data ?? []).map((service, index) => ({
       <h2 class="max-w-xl text-4xl font-bold sm:text-5xl">
         Servicios pensados para vos.
       </h2>
+
       <p class="max-w-md leading-7 text-neutral-400">
         Técnica, dedicación y atención personalizada en cada visita.
       </p>
     </div>
 
-    {error ? (
-      <p class="mt-12 rounded-xl border border-white/10 bg-neutral-950 p-6 text-neutral-300">
-        No pudimos cargar los servicios en este momento.
-      </p>
-    ) : services.length === 0 ? (
-      <p class="mt-12 text-neutral-400">
-        Próximamente encontrarás nuestros servicios.
-      </p>
-    ) : (
-      <div class="mt-12 grid gap-5 md:grid-cols-3">
-        {services.map((service) => (
-          <article class="group rounded-xl border border-white/10 bg-neutral-950 p-7 transition hover:border-amber-400/50">
-            <p class="text-sm font-semibold text-amber-400">
-              {service.number}
-            </p>
+    <div id="services-grid" class="mt-12 grid gap-5 md:grid-cols-3">
+      {services.map((service) => (
+        <article class="group rounded-xl border border-white/10 bg-neutral-950 p-7 transition hover:border-amber-400/50">
+          <p class="text-sm font-semibold text-amber-400">
+            {service.number}
+          </p>
 
-            <h3 class="mt-8 text-2xl font-semibold">
-              {service.name}
-            </h3>
+          <h3 class="mt-8 text-2xl font-semibold">
+            {service.name}
+          </h3>
 
           <p class="mt-4 leading-6 text-neutral-400">
             {service.description}
+          </p>
+
+          {service.price != null && (
+            <p class="mt-2 text-sm text-neutral-300">
+              Precio: {new Intl.NumberFormat('es-AR', {
+                style: 'currency',
+                currency: 'ARS',
+                maximumFractionDigits: 2,
+              }).format(Number(service.price))}
             </p>
+          )}
 
-            {service.price != null && (
-              <p class="mt-4 text-sm text-neutral-300">
-                Precio: {new Intl.NumberFormat('es-AR', {
-                  style: 'currency',
-                  currency: 'ARS',
-                  maximumFractionDigits: 2,
-                }).format(Number(service.price))}
-              </p>
-            )}
+          {service.duration_minutes != null && (
+            <p class="mt-1 text-sm text-neutral-400">
+              Duración: {service.duration_minutes} minutos
+            </p>
+          )}
 
-            {service.duration_minutes != null && (
-              <p class="mt-2 text-sm text-neutral-400">
-                Duración: {service.duration_minutes} minutos
-              </p>
-            )}
+          <a
+            href={site.bookingUrl}
+            data-business-link="booking"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-white transition group-hover:text-amber-400"
+          >
+            Consultar servicio <span aria-hidden="true">↗</span>
+          </a>
+        </article>
+      ))}
+    </div>
 
-                        <a
-                href={site.bookingUrl}
-                data-business-link="booking"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-white transition group-hover:text-amber-400"
-                >
-                Consultar servicio <span aria-hidden="true">↗</span>
-                </a>
-          </article>
-        ))}
-      </div>
-    )}
+    <p
+      id="services-message"
+      class="mt-6 text-sm text-neutral-400"
+      role="status"
+      aria-live="polite"
+    >
+      {error
+        ? 'No pudimos cargar los servicios actualizados.'
+        : services.length === 0
+          ? 'Próximamente encontrarás nuestros servicios.'
+          : ''}
+    </p>
 
     <p class="mt-6 text-sm text-neutral-500">
       Consultá disponibilidad y detalles al reservar.
     </p>
   </div>
 </section>
+
+<script>
+  import { supabase } from '../lib/supabase.js';
+
+  const section = document.querySelector('#servicios');
+  const grid = document.querySelector('#services-grid');
+  const message = document.querySelector('#services-message');
+
+  const fallbackBookingUrl =
+    section?.getAttribute('data-fallback-booking-url') || '/';
+
+  function getSafeBookingUrl(value) {
+    try {
+      const url = new URL(value);
+
+      if (url.protocol === 'https:') {
+        return url.href;
+      }
+    } catch {
+      // Utilizamos la URL de respaldo si el enlace guardado no es válido.
+    }
+
+    return fallbackBookingUrl;
+  }
+
+  function createServiceCard(service, index, bookingUrl) {
+    const article = document.createElement('article');
+
+    article.className =
+      'group rounded-xl border border-white/10 bg-neutral-950 p-7 transition hover:border-amber-400/50';
+
+    const number = document.createElement('p');
+    number.className = 'text-sm font-semibold text-amber-400';
+    number.textContent = String(index + 1).padStart(2, '0');
+
+    const title = document.createElement('h3');
+    title.className = 'mt-8 text-2xl font-semibold';
+    title.textContent = service.name;
+
+    const description = document.createElement('p');
+    description.className = 'mt-4 leading-6 text-neutral-400';
+    description.textContent = service.description || '';
+
+    article.append(number, title, description);
+
+    if (service.price != null) {
+      const price = document.createElement('p');
+      price.className = 'mt-2 text-sm text-neutral-300';
+      price.textContent =
+        'Precio: ' +
+        new Intl.NumberFormat('es-AR', {
+          style: 'currency',
+          currency: 'ARS',
+          maximumFractionDigits: 2,
+        }).format(Number(service.price));
+
+      article.appendChild(price);
+    }
+
+    if (service.duration_minutes != null) {
+      const duration = document.createElement('p');
+      duration.className = 'mt-1 text-sm text-neutral-400';
+      duration.textContent =
+        `Duración: ${service.duration_minutes} minutos`;
+
+      article.appendChild(duration);
+    }
+
+    const link = document.createElement('a');
+    link.href = bookingUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.dataset.businessLink = 'booking';
+    link.className =
+      'mt-7 inline-flex items-center gap-2 text-sm font-semibold text-white transition group-hover:text-amber-400';
+    link.append('Consultar servicio ');
+
+    const arrow = document.createElement('span');
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '↗';
+
+    link.appendChild(arrow);
+    article.appendChild(link);
+
+    return article;
+  }
+
+  async function refreshServices() {
+    try {
+      const [servicesResult, settingsResult] = await Promise.all([
+        supabase
+          .from('services')
+          .select('id, name, description, price, duration_minutes')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true }),
+        supabase
+          .from('business_settings')
+          .select('booking_url')
+          .eq('id', 1)
+          .maybeSingle(),
+      ]);
+
+      if (servicesResult.error) {
+        throw servicesResult.error;
+      }
+
+      const services = servicesResult.data ?? [];
+      const bookingUrl = getSafeBookingUrl(
+        settingsResult.data?.booking_url || fallbackBookingUrl
+      );
+
+      grid.replaceChildren();
+
+      services.forEach((service, index) => {
+        grid.appendChild(
+          createServiceCard(service, index, bookingUrl)
+        );
+      });
+
+      message.textContent = services.length === 0
+        ? 'Próximamente encontrarás nuestros servicios.'
+        : '';
+    } catch (error) {
+      console.error('No se pudieron actualizar los servicios:', error);
+
+      // Si falla la consulta del navegador, conservamos los datos iniciales
+      // que Astro ya generó en el HTML.
+      if (grid.children.length === 0) {
+        message.textContent =
+          'No pudimos cargar los servicios. Intentá recargar la página.';
+      } else {
+        message.textContent =
+          'Mostrando la información disponible; no se pudieron consultar las últimas actualizaciones.';
+      }
+    }
+  }
+
+  refreshServices();
+</script>
