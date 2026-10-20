@@ -1,37 +1,17 @@
+
 ---
-import { supabase } from '../lib/supabase.js';
 import { site } from '../config/site';
-
-const { data, error } = await supabase
-  .from('professionals')
-  .select('id, name, bio, avatar_url')
-  .eq('is_active', true)
-  .order('sort_order', { ascending: true })
-  .limit(1)
-  .maybeSingle();
-
-const professional = data
-  ? {
-      name: data.name,
-      role: 'Barbero profesional',
-      description:
-        data.bio ||
-        'Técnica, precisión y atención personalizada para encontrar el estilo que mejor va con vos.',
-      image: data.avatar_url || '/images/galeria/barbero.jpg',
-    }
-  : null;
 ---
 
 <section
   id="profesionales"
+  data-fallback-booking-url={site.bookingUrl}
   class="bg-neutral-950 px-6 py-24 sm:px-10"
 >
   <div class="mx-auto max-w-5xl">
     <div class="text-center">
-      <p
-        class="text-xs font-semibold uppercase tracking-[0.3em] text-amber-400"
-      >
-        El profesional
+      <p class="text-xs font-semibold uppercase tracking-[0.3em] text-amber-400">
+        Nuestro equipo
       </p>
 
       <h2 class="mt-4 text-4xl font-bold sm:text-5xl">
@@ -39,45 +19,39 @@ const professional = data
       </h2>
 
       <p class="mx-auto mt-5 max-w-2xl leading-7 text-neutral-400">
-        Un espacio donde la técnica y el estilo se encuentran para ofrecerte
+        Conocé a los profesionales que combinan técnica y estilo para ofrecerte
         una experiencia personalizada.
       </p>
     </div>
 
-    {error ? (
-      <p
-        class="mt-12 rounded-xl border border-white/10 bg-neutral-900 p-6 text-neutral-300"
-      >
-        No pudimos cargar la información del profesional.
-      </p>
-    ) : professional ? (
+    <div id="professionals-list" class="mt-12 grid gap-8">
+      <!-- Contenido inicial mientras se consultan los datos actualizados. -->
       <article
-        class="mt-12 grid overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 md:grid-cols-2"
+        class="grid overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 md:grid-cols-2"
       >
         <div class="overflow-hidden">
           <img
-            src={professional.image}
-            alt={`Retrato de ${professional.name}`}
+            src="/images/galeria/barbero.jpg"
+            alt={`Retrato de ${site.barber}`}
             loading="lazy"
             class="h-[380px] w-full object-cover sm:h-[480px]"
           />
         </div>
 
         <div class="flex flex-col justify-center p-8 sm:p-12">
-          <p
-            class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400"
-          >
-            {professional.role}
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">
+            Barbero profesional
           </p>
 
           <h3 class="mt-4 text-3xl font-bold sm:text-4xl">
-            {professional.name}
+            {site.barber}
           </h3>
 
           <div class="mt-6 h-px w-16 bg-amber-400"></div>
 
           <p class="mt-6 leading-7 text-neutral-400">
-            {professional.description}
+            Técnica, precisión y atención personalizada para encontrar el estilo
+            que mejor va con vos.
           </p>
 
           <a
@@ -91,10 +65,173 @@ const professional = data
           </a>
         </div>
       </article>
-    ) : (
-      <p class="mt-12 text-center text-neutral-400">
-        Próximamente conocerás a nuestro profesional.
-      </p>
-    )}
+    </div>
+
+    <p
+      id="professionals-message"
+      class="mt-6 text-center text-sm text-neutral-400"
+      role="status"
+      aria-live="polite"
+    ></p>
   </div>
 </section>
+
+<script>
+  import { supabase } from '../lib/supabase.js';
+
+  const section = document.querySelector('#profesionales');
+  const professionalsList = document.querySelector('#professionals-list');
+  const message = document.querySelector('#professionals-message');
+
+  const fallbackBookingUrl =
+    section?.getAttribute('data-fallback-booking-url') || '/';
+
+  function getSafeBookingUrl(value) {
+    try {
+      const url = new URL(value);
+
+      if (url.protocol === 'https:') {
+        return url.href;
+      }
+    } catch {
+      // Usamos el enlace configurado como respaldo.
+    }
+
+    return fallbackBookingUrl;
+  }
+
+  function getSafeImageUrl(value) {
+    if (typeof value !== 'string' || !value.trim()) {
+      return '/images/galeria/barbero.jpg';
+    }
+
+    if (value.startsWith('/') && !value.startsWith('//')) {
+      return value;
+    }
+
+    try {
+      const url = new URL(value);
+
+      if (url.protocol === 'https:') {
+        return url.href;
+      }
+    } catch {
+      // Si la URL no es válida, usamos la imagen local.
+    }
+
+    return '/images/galeria/barbero.jpg';
+  }
+
+  function createProfessionalCard(professional, bookingUrl) {
+    const article = document.createElement('article');
+
+    article.className =
+      'grid overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 md:grid-cols-2';
+
+    const imageContainer = document.createElement('div');
+    imageContainer.className = 'overflow-hidden';
+
+    const image = document.createElement('img');
+    image.src = getSafeImageUrl(professional.avatar_url);
+    image.alt = `Retrato de ${professional.name}`;
+    image.loading = 'lazy';
+    image.decoding = 'async';
+    image.className = 'h-[380px] w-full object-cover sm:h-[480px]';
+
+    imageContainer.appendChild(image);
+
+    const content = document.createElement('div');
+    content.className = 'flex flex-col justify-center p-8 sm:p-12';
+
+    const role = document.createElement('p');
+    role.className =
+      'text-xs font-semibold uppercase tracking-[0.2em] text-amber-400';
+    role.textContent = 'Barbero profesional';
+
+    const name = document.createElement('h3');
+    name.className = 'mt-4 text-3xl font-bold sm:text-4xl';
+    name.textContent = professional.name;
+
+    const divider = document.createElement('div');
+    divider.className = 'mt-6 h-px w-16 bg-amber-400';
+
+    const bio = document.createElement('p');
+    bio.className = 'mt-6 leading-7 text-neutral-400';
+    bio.textContent =
+      professional.bio ||
+      'Técnica, precisión y atención personalizada para encontrar el estilo que mejor va con vos.';
+
+    const bookingLink = document.createElement('a');
+    bookingLink.href = bookingUrl;
+    bookingLink.dataset.businessLink = 'booking';
+    bookingLink.target = '_blank';
+    bookingLink.rel = 'noopener noreferrer';
+    bookingLink.className =
+      'mt-8 inline-flex w-fit self-start rounded-md bg-amber-400 px-6 py-3 font-semibold text-neutral-950 transition hover:bg-amber-300';
+    bookingLink.textContent = 'Reservar turno';
+
+    content.append(role, name, divider, bio, bookingLink);
+    article.append(imageContainer, content);
+
+    return article;
+  }
+
+  async function refreshProfessionals() {
+    try {
+      const [professionalsResult, settingsResult] = await Promise.all([
+        supabase
+          .from('professionals')
+          .select('id, name, bio, avatar_url, is_active, sort_order')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true }),
+
+        supabase
+          .from('business_settings')
+          .select('booking_url')
+          .eq('id', 1)
+          .maybeSingle(),
+      ]);
+
+      if (professionalsResult.error) {
+        throw professionalsResult.error;
+      }
+
+      const professionals = professionalsResult.data ?? [];
+      const bookingUrl = getSafeBookingUrl(
+        settingsResult.data?.booking_url || fallbackBookingUrl
+      );
+
+      professionalsList.replaceChildren();
+
+      if (professionals.length === 0) {
+        message.textContent =
+          'Próximamente conocerás a nuestros profesionales.';
+        return;
+      }
+
+      professionals.forEach((professional) => {
+        professionalsList.appendChild(
+          createProfessionalCard(professional, bookingUrl)
+        );
+      });
+
+      message.textContent = '';
+    } catch (error) {
+      console.error(
+        'No se pudo actualizar la información de profesionales:',
+        error
+      );
+
+      // Si la consulta falla, conservamos la tarjeta inicial renderizada por Astro.
+      if (professionalsList.children.length > 0) {
+        message.textContent =
+          'Mostrando la información disponible; no se pudieron consultar las últimas actualizaciones.';
+      } else {
+        message.textContent =
+          'No pudimos cargar los profesionales. Intentá recargar la página.';
+      }
+    }
+  }
+
+  refreshProfessionals();
+</script>
