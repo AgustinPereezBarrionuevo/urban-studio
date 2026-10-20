@@ -1,0 +1,536 @@
+---
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Mi cuenta | Urban Studio</title>
+  </head>
+
+  <body>
+    <main class="account-page">
+      <header class="page-header">
+        <a class="back-link" href="/admin/">← Volver al panel</a>
+        <p class="eyebrow">URBAN STUDIO · ADMINISTRACIÓN</p>
+        <h1>Mi cuenta</h1>
+        <p class="subtitle">
+          Administrá tu email y tu contraseña de acceso.
+        </p>
+      </header>
+
+      <p id="page-message" class="notice" role="status" aria-live="polite">
+        Verificando sesión...
+      </p>
+
+      <section id="account-content" class="account-grid" hidden>
+        <article class="account-card">
+          <div class="card-heading">
+            <span class="card-icon" aria-hidden="true">✉</span>
+            <div>
+              <h2>Cambiar email</h2>
+              <p>Actualizá la dirección asociada a tu cuenta.</p>
+            </div>
+          </div>
+
+          <div class="current-email">
+            <span>Email actual</span>
+            <strong id="current-email">Cargando...</strong>
+          </div>
+
+          <form id="email-form">
+            <label for="new-email">Nuevo email</label>
+            <input
+              id="new-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="nuevo@email.com"
+              required
+            />
+
+            <button class="primary-button" id="email-button" type="submit">
+              Actualizar email
+            </button>
+
+            <p
+              id="email-message"
+              class="form-message"
+              role="status"
+              aria-live="polite"
+            ></p>
+          </form>
+
+          <p class="help-text">
+            Supabase puede solicitar confirmación desde tu email actual y el
+            nuevo. Revisá ambas bandejas, incluido el correo no deseado.
+          </p>
+        </article>
+
+        <article class="account-card">
+          <div class="card-heading">
+            <span class="card-icon" aria-hidden="true">⌑</span>
+            <div>
+              <h2>Cambiar contraseña</h2>
+              <p>Elegí una contraseña nueva para proteger tu acceso.</p>
+            </div>
+          </div>
+
+          <form id="password-form">
+            <label for="new-password">Nueva contraseña</label>
+            <input
+              id="new-password"
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              minlength="8"
+              placeholder="Mínimo 8 caracteres"
+              required
+            />
+
+            <label for="confirm-password">Confirmar contraseña</label>
+            <input
+              id="confirm-password"
+              name="confirm-password"
+              type="password"
+              autocomplete="new-password"
+              minlength="8"
+              placeholder="Repetí la contraseña"
+              required
+            />
+
+            <button
+              class="primary-button"
+              id="password-button"
+              type="submit"
+            >
+              Actualizar contraseña
+            </button>
+
+            <p
+              id="password-message"
+              class="form-message"
+              role="status"
+              aria-live="polite"
+            ></p>
+          </form>
+
+          <p class="help-text">
+            Usá una contraseña única que no compartas con otras cuentas.
+          </p>
+        </article>
+      </section>
+    </main>
+
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #0a0a0a;
+        color: #f5f5f5;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        background: #0a0a0a;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .account-page {
+        width: min(100% - 32px, 1000px);
+        margin: 0 auto;
+        padding: 36px 0 64px;
+      }
+
+      .page-header {
+        margin-bottom: 28px;
+      }
+
+      .back-link {
+        display: inline-block;
+        margin-bottom: 32px;
+        color: #fbbf24;
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      .back-link:hover {
+        color: #fde68a;
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        color: #fbbf24;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(32px, 5vw, 44px);
+      }
+
+      .subtitle {
+        color: #a3a3a3;
+        line-height: 1.6;
+      }
+
+      .notice {
+        color: #a3a3a3;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .account-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+        margin-top: 24px;
+      }
+
+      .account-card {
+        min-width: 0;
+        padding: 24px;
+        border: 1px solid #292929;
+        border-radius: 16px;
+        background: #141414;
+      }
+
+      .card-heading {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 24px;
+      }
+
+      .card-icon {
+        display: grid;
+        flex: 0 0 42px;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border-radius: 10px;
+        background: #292216;
+        color: #fbbf24;
+        font-size: 22px;
+      }
+
+      h2 {
+        margin: 0 0 7px;
+        font-size: 21px;
+      }
+
+      .card-heading p,
+      .help-text {
+        color: #a3a3a3;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .card-heading p {
+        margin: 0;
+      }
+
+      .current-email {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 20px;
+        padding: 13px;
+        border: 1px solid #292929;
+        border-radius: 8px;
+        overflow-wrap: anywhere;
+      }
+
+      .current-email span {
+        color: #a3a3a3;
+        font-size: 12px;
+      }
+
+      .current-email strong {
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      label {
+        margin-top: 8px;
+        color: #e5e5e5;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      input {
+        width: 100%;
+        min-width: 0;
+        padding: 12px 13px;
+        border: 1px solid #404040;
+        border-radius: 8px;
+        outline: none;
+        background: #0a0a0a;
+        color: #f5f5f5;
+      }
+
+      input:focus {
+        border-color: #fbbf24;
+        box-shadow: 0 0 0 2px rgb(251 191 36 / 12%);
+      }
+
+      .primary-button {
+        width: 100%;
+        margin-top: 10px;
+        padding: 13px 16px;
+        border: 0;
+        border-radius: 8px;
+        background: #fbbf24;
+        color: #171717;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 150ms ease;
+      }
+
+      .primary-button:hover {
+        background: #fcd34d;
+      }
+
+      .primary-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .form-message {
+        min-height: 20px;
+        margin: 4px 0 0;
+        font-size: 13px;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+      }
+
+      .help-text {
+        margin: 18px 0 0;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      @media (max-width: 700px) {
+        .account-page {
+          padding-top: 24px;
+        }
+
+        .account-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .account-card {
+          padding: 20px;
+        }
+      }
+    </style>
+
+    <script>
+      import { supabase } from '../../lib/supabase.js';
+
+      const pageMessage = document.querySelector('#page-message');
+      const accountContent = document.querySelector('#account-content');
+
+      const currentEmail = document.querySelector('#current-email');
+      const emailForm = document.querySelector('#email-form');
+      const newEmailInput = document.querySelector('#new-email');
+      const emailButton = document.querySelector('#email-button');
+      const emailMessage = document.querySelector('#email-message');
+
+      const passwordForm = document.querySelector('#password-form');
+      const newPasswordInput = document.querySelector('#new-password');
+      const confirmPasswordInput = document.querySelector('#confirm-password');
+      const passwordButton = document.querySelector('#password-button');
+      const passwordMessage = document.querySelector('#password-message');
+
+      function setMessage(element, text, type = 'info') {
+        element.textContent = text;
+
+        if (type === 'success') {
+          element.style.color = '#86efac';
+        } else if (type === 'error') {
+          element.style.color = '#fca5a5';
+        } else {
+          element.style.color = '#a3a3a3';
+        }
+      }
+
+      async function checkOwnerSession() {
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+          window.location.replace('/admin/login');
+          return;
+        }
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (profileError) {
+          console.error('Error al verificar el propietario:', profileError);
+          setMessage(
+            pageMessage,
+            'No se pudo verificar tu cuenta. Intentá recargar la página.',
+            'error',
+          );
+          return;
+        }
+
+        if (profile?.role !== 'owner') {
+          window.location.replace('/admin/login');
+          return;
+        }
+
+        currentEmail.textContent = user.email || 'Email no disponible';
+        newEmailInput.value = user.email || '';
+        accountContent.hidden = false;
+        setMessage(pageMessage, 'Sesión verificada correctamente.', 'success');
+      }
+
+      emailForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const newEmail = newEmailInput.value.trim();
+
+        if (!newEmail) {
+          setMessage(emailMessage, 'Ingresá el nuevo email.', 'error');
+          return;
+        }
+
+        if (newEmail.toLowerCase() === currentEmail.textContent.toLowerCase()) {
+          setMessage(
+            emailMessage,
+            'El nuevo email coincide con el email actual.',
+            'error',
+          );
+          return;
+        }
+
+        emailButton.disabled = true;
+        emailButton.textContent = 'Enviando solicitud...';
+        setMessage(emailMessage, '');
+
+        try {
+          const { error } = await supabase.auth.updateUser(
+            { email: newEmail },
+            { emailRedirectTo: `${window.location.origin}/admin/cuenta` },
+          );
+
+          if (error) throw error;
+
+          setMessage(
+            emailMessage,
+            'Solicitud enviada. Revisá el email actual y el nuevo para completar la confirmación. El cambio puede quedar pendiente hasta que confirmes los correos.',
+            'success',
+          );
+        } catch (error) {
+          console.error('Error al cambiar el email:', error);
+          setMessage(
+            emailMessage,
+            error instanceof Error
+              ? error.message
+              : 'No se pudo solicitar el cambio de email.',
+            'error',
+          );
+        } finally {
+          emailButton.disabled = false;
+          emailButton.textContent = 'Actualizar email';
+        }
+      });
+
+      passwordForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const newPassword = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        if (newPassword.length < 8) {
+          setMessage(
+            passwordMessage,
+            'La contraseña debe tener al menos 8 caracteres.',
+            'error',
+          );
+          return;
+        }
+
+        if (newPassword !== confirmPassword) {
+          setMessage(
+            passwordMessage,
+            'Las contraseñas no coinciden.',
+            'error',
+          );
+          confirmPasswordInput.focus();
+          return;
+        }
+
+        passwordButton.disabled = true;
+        passwordButton.textContent = 'Actualizando...';
+        setMessage(passwordMessage, '');
+
+        try {
+          const { error } = await supabase.auth.updateUser({
+            password: newPassword,
+          });
+
+          if (error) throw error;
+
+          passwordForm.reset();
+
+          setMessage(
+            passwordMessage,
+            'Contraseña actualizada correctamente.',
+            'success',
+          );
+        } catch (error) {
+          console.error('Error al cambiar la contraseña:', error);
+          setMessage(
+            passwordMessage,
+            error instanceof Error
+              ? error.message
+              : 'No se pudo actualizar la contraseña.',
+            'error',
+          );
+        } finally {
+          passwordButton.disabled = false;
+          passwordButton.textContent = 'Actualizar contraseña';
+        }
+      });
+
+      checkOwnerSession().catch((error) => {
+        console.error('Error al verificar la sesión:', error);
+        setMessage(
+          pageMessage,
+          'No se pudo verificar la sesión. Volvé a iniciar sesión.',
+          'error',
+        );
+      });
+    </script>
+  </body>
+</html>
