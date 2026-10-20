@@ -1,5 +1,3 @@
-
-
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -595,6 +593,8 @@
 <script>
   import { supabase } from '../../lib/supabase.js';
   import Sortable from 'sortablejs';
+  import { openImageCropper } from '../../lib/imageCropper.js';
+  import { getCloudinaryCroppedUrl } from '../../lib/cloudinaryCrop.js';
 
   const pageMessage = document.querySelector('#page-message');
   const uploadForm = document.querySelector('#upload-form');
@@ -613,11 +613,72 @@
   let currentUser = null;
   let professionalId = null;
   let gallerySortable = null;
+  let selectedCrop = null;
 
-  fileInput.addEventListener('change', () => {
-  selectedFileName.textContent =
-    fileInput.files?.[0]?.name || 'Ninguna fotografía seleccionada';
+
+fileInput.addEventListener('change', async () => {
+  const file = fileInput.files?.[0];
+  selectedCrop = null;
+
+  if (!file) {
+    selectedFileName.textContent = 'Ninguna fotografía seleccionada';
+    return;
+  }
+
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+  if (!allowedTypes.includes(file.type)) {
+    showUploadMessage('Usá una imagen JPG, PNG o WebP.', 'error');
+    fileInput.value = '';
+    selectedFileName.textContent = 'Ninguna fotografía seleccionada';
+    return;
+  }
+
+  if (file.size > 10 * 1024 * 1024) {
+    showUploadMessage('La imagen supera el límite de 10 MB.', 'error');
+    fileInput.value = '';
+    selectedFileName.textContent = 'Ninguna fotografía seleccionada';
+    return;
+  }
+
+  try {
+    const crop = await openImageCropper(file, {
+      title: 'Ajustar fotografía de la galería',
+      aspectRatio: 4 / 5,
+      previewWidth: 600,
+    });
+
+    if (!crop) {
+      fileInput.value = '';
+      selectedFileName.textContent = 'Ninguna fotografía seleccionada';
+      return;
+    }
+
+    selectedCrop = {
+      x: crop.x,
+      y: crop.y,
+      width: crop.width,
+      height: crop.height,
+    };
+
+    // La previsualización se usa en el editor, no se guarda en Cloudinary.
+    if (crop.previewUrl) {
+      URL.revokeObjectURL(crop.previewUrl);
+    }
+
+    selectedFileName.textContent = `${file.name} — encuadre listo`;
+    showUploadMessage(
+      'Encuadre confirmado. Ya podés publicar la fotografía.',
+      'success',
+    );
+  } catch (error) {
+    console.error('Error al ajustar la fotografía:', error);
+    fileInput.value = '';
+    selectedFileName.textContent = 'Ninguna fotografía seleccionada';
+    showUploadMessage('No se pudo abrir el editor de imágenes.', 'error');
+  }
 });
+
 
   function showUploadMessage(text, type = 'info') {
     uploadMessage.textContent = text;
@@ -685,7 +746,7 @@
     try {
       const { data, error } = await supabase
         .from('gallery_images')
-        .select('id, title, category, image_url, is_active, sort_order')
+        .select('id, title, category, image_url, is_active, sort_order,  crop_x, crop_y, crop_width, crop_height')
         .order('sort_order', { ascending: true })
         .limit(200);
 
@@ -705,7 +766,7 @@
         article.dataset.sortOrder = String(image.sort_order ?? 0);
 
         const img = document.createElement('img');
-        img.src = image.image_url;
+        img.src = getCloudinaryCroppedUrl(image.image_url, image);
         img.alt = image.title || 'Fotografía de Urban Studio';
         img.loading = 'lazy';
         img.decoding = 'async';
@@ -1001,6 +1062,14 @@
       return;
     }
 
+        if (!selectedCrop) {
+    showUploadMessage(
+        'Seleccioná una fotografía y confirmá su encuadre antes de subirla.',
+        'error',
+    );
+    return;
+    }
+
     uploadButton.disabled = true;
     uploadButton.textContent = 'Subiendo imagen...';
     showUploadMessage('Preparando una subida segura...');
@@ -1084,6 +1153,10 @@
           category: category || null,
           is_active: true,
           sort_order: nextSortOrder,
+          crop_x: selectedCrop.x,
+          crop_y: selectedCrop.y,
+          crop_width: selectedCrop.width,
+          crop_height: selectedCrop.height,
         });
 
       if (insertError) {
@@ -1093,6 +1166,7 @@
       }
 
       uploadForm.reset();
+      selectedCrop = null;
       selectedFileName.textContent = 'Ninguna fotografía seleccionada';
       showUploadMessage('¡Fotografía subida y publicada correctamente!', 'success');
       await loadGallery();

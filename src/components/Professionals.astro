@@ -78,6 +78,7 @@ import { site } from '../config/site';
 
 <script>
   import { supabase } from '../lib/supabase.js';
+  import { getCloudinaryCroppedUrl } from '../lib/cloudinaryCrop.js';
 
   const section = document.querySelector('#profesionales');
   const professionalsList = document.querySelector('#professionals-list');
@@ -122,66 +123,78 @@ import { site } from '../config/site';
     return '/images/galeria/barbero.jpg';
   }
 
-  function createProfessionalCard(professional, bookingUrl) {
-    const article = document.createElement('article');
+        function createProfessionalCard(professional, bookingUrl) {
+        const article = document.createElement('article');
 
-    article.className =
-      'grid overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 md:grid-cols-2';
+        article.className =
+            'grid overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 md:grid-cols-2';
 
-    const imageContainer = document.createElement('div');
-    imageContainer.className = 'overflow-hidden';
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'overflow-hidden';
 
-    const image = document.createElement('img');
-    image.src = getSafeImageUrl(professional.avatar_url);
-    image.alt = `Retrato de ${professional.name}`;
-    image.loading = 'lazy';
-    image.decoding = 'async';
-    image.className = 'h-[380px] w-full object-cover sm:h-[480px]';
+        const image = document.createElement('img');
 
-    imageContainer.appendChild(image);
+        // Aplicar el recorte guardado en Supabase.
+        const croppedImageUrl = getCloudinaryCroppedUrl(
+            professional.avatar_url,
+            {
+            crop_x: professional.avatar_crop_x,
+            crop_y: professional.avatar_crop_y,
+            crop_width: professional.avatar_crop_width,
+            crop_height: professional.avatar_crop_height,
+            }
+        );
 
-    const content = document.createElement('div');
-    content.className = 'flex flex-col justify-center p-8 sm:p-12';
+        image.src = getSafeImageUrl(croppedImageUrl);
+        image.alt = `Retrato de ${professional.name}`;
+        image.loading = 'lazy';
+        image.decoding = 'async';
+        image.className = 'h-[380px] w-full object-cover sm:h-[480px]';
 
-    const role = document.createElement('p');
-    role.className =
-      'text-xs font-semibold uppercase tracking-[0.2em] text-amber-400';
-    role.textContent = 'Barbero profesional';
+        imageContainer.appendChild(image);
 
-    const name = document.createElement('h3');
-    name.className = 'mt-4 text-3xl font-bold sm:text-4xl';
-    name.textContent = professional.name;
+        const content = document.createElement('div');
+        content.className = 'flex flex-col justify-center p-8 sm:p-12';
 
-    const divider = document.createElement('div');
-    divider.className = 'mt-6 h-px w-16 bg-amber-400';
+        const role = document.createElement('p');
+        role.className =
+            'text-xs font-semibold uppercase tracking-[0.2em] text-amber-400';
+        role.textContent = 'Barbero profesional';
 
-    const bio = document.createElement('p');
-    bio.className = 'mt-6 leading-7 text-neutral-400';
-    bio.textContent =
-      professional.bio ||
-      'Técnica, precisión y atención personalizada para encontrar el estilo que mejor va con vos.';
+        const name = document.createElement('h3');
+        name.className = 'mt-4 text-3xl font-bold sm:text-4xl';
+        name.textContent = professional.name;
 
-    const bookingLink = document.createElement('a');
-    bookingLink.href = bookingUrl;
-    bookingLink.dataset.businessLink = 'booking';
-    bookingLink.target = '_blank';
-    bookingLink.rel = 'noopener noreferrer';
-    bookingLink.className =
-      'mt-8 inline-flex w-fit self-start rounded-md bg-amber-400 px-6 py-3 font-semibold text-neutral-950 transition hover:bg-amber-300';
-    bookingLink.textContent = 'Reservar turno';
+        const divider = document.createElement('div');
+        divider.className = 'mt-6 h-px w-16 bg-amber-400';
 
-    content.append(role, name, divider, bio, bookingLink);
-    article.append(imageContainer, content);
+        const bio = document.createElement('p');
+        bio.className = 'mt-6 leading-7 text-neutral-400';
+        bio.textContent =
+            professional.bio ||
+            'Técnica, precisión y atención personalizada para encontrar el estilo que mejor va con vos.';
 
-    return article;
-  }
+        const bookingLink = document.createElement('a');
+        bookingLink.href = bookingUrl;
+        bookingLink.dataset.businessLink = 'booking';
+        bookingLink.target = '_blank';
+        bookingLink.rel = 'noopener noreferrer';
+        bookingLink.className =
+            'mt-8 inline-flex w-fit self-start rounded-md bg-amber-400 px-6 py-3 font-semibold text-neutral-950 transition hover:bg-amber-300';
+        bookingLink.textContent = 'Reservar turno';
+
+        content.append(role, name, divider, bio, bookingLink);
+        article.append(imageContainer, content);
+
+        return article;
+        }
 
   async function refreshProfessionals() {
     try {
       const [professionalsResult, settingsResult] = await Promise.all([
         supabase
           .from('professionals')
-          .select('id, name, bio, avatar_url, is_active, sort_order')
+          .select('id, name, bio, avatar_url, is_active, sort_order, avatar_crop_x, avatar_crop_y, avatar_crop_width, avatar_crop_height')
           .eq('is_active', true)
           .order('sort_order', { ascending: true }),
 
